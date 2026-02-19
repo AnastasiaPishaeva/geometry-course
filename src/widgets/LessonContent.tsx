@@ -10,18 +10,19 @@ interface LessonContentProps {
 }
 
 const LessonContent: React.FC<LessonContentProps> = ({ topic }) => {
-  const [activeTopicIndex, setActiveTopicIndex] = useState(0);
+  const [activeLessonIndex, setActiveLessonIndex] = useState(0);
 
-  const activeLesson = topic.lessons[activeTopicIndex];
+  const activeLesson = topic.lessons[activeLessonIndex];
 
   return (
     <>
       <Tabs
         lessons={topic.lessons}
-        onTabChange={setActiveTopicIndex}
+        onTabChange={setActiveLessonIndex}
       />
 
       <Content lesson={activeLesson} />
     </>
   );
 };
+export default LessonContent;

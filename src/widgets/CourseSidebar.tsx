@@ -89,7 +89,7 @@ const SidebarMenu = () => {
         open={isMobile ? open : true}
         onClose={() => toggleDrawer(false)}
       >
-        <Content>СОДЕРЖАНИЕ</Content>
+        <Content variant = "h4">СОДЕРЖАНИЕ</Content>
         <Grid sx={{ flexGrow: "1" }}>
         {menuData.map((section, index) => {
           const hasLessons = section.lessons && section.lessons.length > 0

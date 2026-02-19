@@ -64,6 +64,17 @@ declare module "@mui/material/styles" {
   }
 }
 
+declare module "@mui/material/Typography" {
+  interface TypographyPropsVariantOverrides {
+    btnText: true;
+    text1: true;
+    text2: true;
+    mobileMenu: true;
+    mobileMenuActive: true;
+  }
+}
+
+
 
 const getTheme = () =>
   createTheme({
