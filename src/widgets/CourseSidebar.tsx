@@ -13,11 +13,11 @@ import {
   IconButton
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExitToAppOutlinedIcon from "@mui/icons-material/ExitToAppOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import { styled } from "@mui/system";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
+import menuData from "../assets/menuData.json"
 
 const Content = styled(Typography)(({ theme }) => ({
   color: theme.palette.grey[500],
@@ -38,22 +38,11 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
   }
 }));
 
-const StyledButtonExit = styled(Button)(({ theme }) => ({
-  paddingBottom: theme.spacing(3),
-  color: theme.palette.error.main,
-  width: "100%",
-  transition: "transform 0.2s ease-in-out",
-  "&:hover": {
-    backgroundColor: "inherit",
-    transform: "scale(1.03)"
-  }
-}));
-
 const SidebarMenu = () => {
   const navigate = useNavigate();
-  const { subSubSection: urlSubSubSection } = useParams();
-  const { setActiveSection } = useSection();
-  const { setActiveSubSubSection } = useSubSubSection();
+  const { sectionId, lessonId } = useParams();
+  const activeSectionId = Number(sectionId);
+  const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 900px)");
@@ -64,9 +53,6 @@ const SidebarMenu = () => {
   const [openSection, setOpenSection] = useState<boolean[]>(
     menuData.map(() => false)
   );
-  const [openSubSection, setOpenSubSection] = useState<boolean[][]>(
-    menuData.map((section) => section.subSections.map(() => false))
-  );
 
   const toggleSection = (index: number) => {
     setOpenSection((prevState) =>
@@ -74,48 +60,19 @@ const SidebarMenu = () => {
     );
   };
 
-  const toggleSubSection = (sectionIndex: number, subIndex: number) => {
-    setOpenSubSection((prevState) =>
-      prevState.map((subSections, i) =>
-        i === sectionIndex
-          ? subSections.map((isOpen, j) => (j === subIndex ? !isOpen : isOpen))
-          : subSections
-      )
-    );
-  };
+  // useEffect(() => {
+  //   if (!sectionId) return;
 
-  const [openSubSubSection, setOpenSubSubSection] = useState<{
-    sectionIndex: number;
-    subIndex: number;
-    subSubIndex: number;
-  } | null>(null);
+  //   const index = menuData.findIndex(
+  //     (section) => section.id === Number(sectionId)
+  //   );
 
-  const toggleSubSubSection = (
-    sectionIndex: number,
-    subIndex: number,
-    subSubIndex: number
-  ) => {
-    setOpenSubSubSection({ sectionIndex, subIndex, subSubIndex });
-  };
-
-  useEffect(() => {
-    const subSubSectionId = urlSubSubSection;
-    menuData.forEach((section, sectionIndex) => {
-      section.subSections.forEach((subSection, subIndex) => {
-        if (subSection.subSubSections) {
-          subSection.subSubSections.forEach((subSubSection, subSubIndex) => {
-            if (subSubSection[1] === subSubSectionId) {
-              setActiveSection(section.title);
-              setActiveSubSubSection(subSubSection);
-              openSection[sectionIndex] = true;
-              openSubSection[sectionIndex][subIndex] = true;
-              toggleSubSubSection(sectionIndex, subIndex, subSubIndex);
-            }
-          });
-        }
-      });
-    });
-  }, [urlSubSubSection]);
+  //   if (index !== -1) {
+  //     setOpenSection(prev =>
+  //       prev.map((_, i) => i === index)
+  //     );
+  //   }
+  // }, [sectionId]);
 
   return (
     <Grid sx={{ height: "100%", width: "100%" }}>
@@ -134,119 +91,74 @@ const SidebarMenu = () => {
       >
         <Content>СОДЕРЖАНИЕ</Content>
         <Grid sx={{ flexGrow: "1" }}>
-          {menuData.map((section, index) => (
-            <Accordion
-              key={index}
-              disableGutters
-              elevation={0}
-              expanded={openSection[index]}
-              onChange={() => toggleSection(index)}
-              sx={{
-                background: "none",
-                "&::before": { display: "none" }
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls={`panel${index}-content`}
-                id={`panel${index}-header`}
+        {menuData.map((section, index) => {
+          const hasLessons = section.lessons && section.lessons.length > 0
+          const isSectionActive = section.id === activeSectionId;
+
+          if (hasLessons){
+            return (
+            <Accordion 
+                key={index}
+                disableGutters
+                elevation={0}
+                expanded={isSectionActive}
+                onChange={() => toggleSection(index)}
+                sx={{
+                  background: "none",
+                  "&::before": { display: "none" }
+                }}
               >
-                <Typography sx={{ color: theme.palette.purple.dark }}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls={`panel${index}-content`}
+                  id={`panel${index}-header`}
+                >
+                  <Typography sx={{color: theme.palette.primaryScale[100] }}>
+                    {section.title}
+                  </Typography>
+                </AccordionSummary>
+
+                <AccordionDetails>
+                  <List>
+                    {section.lessons!.map((lesson, lesIndex) => {
+                          const isActive = isSectionActive && index === activeLessonIndex;
+
+                          return (
+                          <ListItemButton 
+                          key={lesIndex}
+                          onClick={() => {navigate(`/course/${section.id}/lesson/${lesIndex}`)}}
+                          selected={isActive}
+                          sx={{
+                            borderRadius: theme.shape.borderRadius,
+                            "&:hover": {
+                              backgroundColor: `rgba(${theme.palette.primaryScale[700]}, 0.85)`
+                            },
+                          }}>
+                            <Typography> {lesson} </Typography>
+                          </ListItemButton>
+                    )})
+                    }
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+          )}
+          else {
+            return (
+              <ListItemButton
+                key={index}
+                onClick={() => navigate(`/course/${section.id}`)}
+                selected={isSectionActive}
+                sx={{
+                  borderRadius: theme.shape.borderRadius,
+                }}
+              >
+                <Typography>
                   {section.title}
                 </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <List>
-                  {section.subSections.map((subSection, subIndex) => {
-                    if (typeof subSection === "string") {
-                      return (
-                        <ListItemButton key={subIndex}>
-                          <Typography> {subSection} </Typography>
-                        </ListItemButton>
-                      );
-                    } else {
-                      return (
-                        <Accordion
-                          key={subIndex}
-                          disableGutters
-                          elevation={0}
-                          expanded={openSubSection[index][subIndex]}
-                          onChange={() => toggleSubSection(index, subIndex)}
-                          sx={{
-                            background: "none",
-                            "&::before": { display: "none" }
-                          }}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls={`panel${index}-${subIndex}-content`}
-                            id={`panel${index}-${subIndex}-header`}
-                          >
-                            <Typography
-                              sx={{
-                                color: openSubSection[index][subIndex]
-                                  ? theme.palette.purple.light
-                                  : "inherit"
-                              }}
-                            >
-                              {" "}
-                              {subSection.title}{" "}
-                            </Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            <List>
-                              {subSection.subSubSections.map(
-                                (subSubSection, subSubIndex) => (
-                                  <ListItemButton
-                                    key={subSubIndex}
-                                    onClick={() => {
-                                      toggleSubSubSection(index, subIndex, subSubIndex);
-                                      setActiveSection(section.title);
-                                      setActiveSubSubSection(subSubSection);
-                                      navigate(`/algorithmsPage/${subSubSection[1]}`);
-                                    }}
-                                    sx={{
-                                      borderRadius: theme.shape.borderRadius,
-                                      "&:hover": {
-                                        backgroundColor: `rgba(${theme.palette.purple.onHover}, 0.85)`
-                                      },
-                                      backgroundColor:
-                                        openSubSubSection &&
-                                        openSubSubSection.sectionIndex === index &&
-                                        openSubSubSection.subIndex === subIndex &&
-                                        openSubSubSection.subSubIndex === subSubIndex
-                                          ? theme.palette.purple.toClick
-                                          : "inherit",
-                                      boxShadow:
-                                        openSubSubSection &&
-                                        openSubSubSection.sectionIndex === index &&
-                                        openSubSubSection.subIndex === subIndex &&
-                                        openSubSubSection.subSubIndex === subSubIndex
-                                          ? "2"
-                                          : "inherit"
-                                    }}
-                                  >
-                                    <Typography> {subSubSection[0]} </Typography>
-                                  </ListItemButton>
-                                )
-                              )}
-                            </List>
-                          </AccordionDetails>
-                        </Accordion>
-                      );
-                    }
-                  })}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </Grid>
-        <Grid>
-          <Link to="/CourseContent">
-            <StyledButtonExit startIcon={<ExitToAppOutlinedIcon />}>
-              Вернуться к содержанию
-            </StyledButtonExit>
-          </Link>
+              </ListItemButton>
+            )
+          }
+        })}
         </Grid>
       </StyledDrawer>
     </Grid>
