@@ -6,6 +6,7 @@ interface ContentProps {
 }
 
 const Content: React.FC<ContentProps> = ({ lesson }) => {
+  const theme = useTheme();
   return (
     <>
       <h1>

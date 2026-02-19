@@ -46,14 +46,24 @@ declare module "@mui/material/styles" {
       cardRadius?: string;
     };
   }
-  interface TypeText {
-    two: string,
-    three: string,
-    four: string,
-    white: string;
-    black: string;
+
+  interface TypographyVariants {
+    btnText: React.CSSProperties;
+    text1: React.CSSProperties;
+    text2: React.CSSProperties;
+    mobileMenu: React.CSSProperties;
+    mobileMenuActive: React.CSSProperties;
+  }
+
+  interface TypographyVariantsOptions {
+    btnText?: React.CSSProperties;
+    text1?: React.CSSProperties;
+    text2?: React.CSSProperties;
+    mobileMenu?: React.CSSProperties;
+    mobileMenuActive?: React.CSSProperties;
   }
 }
+
 
 const getTheme = () =>
   createTheme({
@@ -75,21 +85,71 @@ const getTheme = () =>
       background: {
         default: "#fff",
       },
-
-      text: { 
-        white: "#fff",
-        black: "#000",
-      },
     },
+
     typography: {
       fontFamily: "'Rubik', sans-serif",
       h1: {
-        fontFamily: "'Rubik', sans-serif",
-        fontSize: "90px",
-        lineHeight: "1.2",
-        fontWeight: "bold",
-        letterSpacing: "1px",
+        fontWeight: 700,
+        fontSize: '58px',
+        lineHeight: '80px',
+        letterSpacing: '0.2px',
       },
+      h2: {
+        fontWeight: 700,
+        fontSize: '40px',
+        lineHeight: '57px',
+        letterSpacing: '0.2px',
+      },
+      h3: {
+        fontWeight: 500,
+        fontSize: '24px',
+        lineHeight: '32px',
+        letterSpacing: '0.1px',
+      },
+      h4: {
+        fontWeight: 500,
+        fontSize: '20px',
+        lineHeight: '30px',
+        letterSpacing: '0.2px',
+      },
+      h5: {
+        fontWeight: 400,
+        fontSize: '18px',
+        lineHeight: '30px',
+        letterSpacing: '0.2px',
+      },
+      btnText: {
+        fontWeight: 600,
+        fontSize: '20px',
+        lineHeight: '28px',
+        letterSpacing: '0.2px',
+      },
+      text1: {
+        fontWeight: 400,
+        fontSize: '16px',
+        lineHeight: '100%',
+        letterSpacing: '0.2px',
+      },
+      text2: {
+        fontWeight: 400,
+        fontSize: '14px',
+        lineHeight: '100%',
+        letterSpacing: '0.2px',
+      },
+      mobileMenu: {
+        fontWeight: 400,
+        fontSize: '18px',
+        lineHeight: '45px',
+        letterSpacing: '0.2px',
+      },
+      mobileMenuActive: {
+        fontWeight: 700,
+        fontSize: '18px',
+        lineHeight: '45px',
+        letterSpacing: '0.2px',
+      },
+      
       allVariants: {
         wordBreak: "break-word",
         textTransform: "none",
