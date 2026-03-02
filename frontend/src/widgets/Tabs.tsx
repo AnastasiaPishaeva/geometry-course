@@ -4,7 +4,7 @@ import { useTheme } from "@mui/material/styles";
 import TheoryUnfinishedButton from "../assets/Tabs/TheoryUnfinished.png";
 import TheoryFinishedButton from "../assets/Tabs/TheoryFinished.png";
 import GameUnfinishedButton from "../assets/Tabs/GameUnfinished.png";
-import GameFinishedButton from "../assets/Tabs/GameFinished.png";
+import GameFinishedButton from "../assets/Tabs/GameUnfinished.png";
 
 import type { Lesson } from "../entities/types";
 

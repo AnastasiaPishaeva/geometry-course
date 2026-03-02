@@ -1,12 +1,13 @@
-import { Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import CoursePage from '../pages/CoursePage';
 export const AppRoutes = () => {
     return (
-        <>
-        <Route path="/" element={<HomePage />} />
+        <Routes>
+        {/* <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} /> */}
         <Route path="/course/:sectionId/lesson/:lessonId" element={<CoursePage />} />
-        </>
+        </Routes>
     )
 }
 

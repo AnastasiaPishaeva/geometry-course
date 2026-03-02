@@ -1,11 +1,12 @@
 export type Lesson = {
-  id: number;
+  lesson_id: number;
   title: string;
-  isCompleted: boolean;
+  order_number: number;
 };
 
 export type Topic = {
-  topicId: number;
+  topic_id: number;
   title: string;
+  order_number: number;
   lessons: Lesson[];
 };
