@@ -22,6 +22,7 @@ import api from "../api/api";
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   height: "100%",
+  color: theme.palette.primaryScale[900],
   "& .MuiDrawer-paper": {
     width: "75vw",
     position: "relative",
@@ -91,7 +92,7 @@ const SidebarMenu = () => {
         open={isMobile ? open : true}
         onClose={() => toggleDrawer(false)}
       >
-        <Grid sx={{ flexGrow: "1" }}>
+        <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
         {topics?.map((section, index) => {
           const hasLessons = section.lessons.length > 0
           const isSectionActive = section.topic_id === activeSectionId;
