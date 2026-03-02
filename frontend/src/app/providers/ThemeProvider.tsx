@@ -95,6 +95,7 @@ const getTheme = () =>
 
       background: {
         default: "#fff",
+        paper: "#E7ECFC",
       },
     },
 
