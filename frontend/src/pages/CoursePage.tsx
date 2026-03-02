@@ -19,7 +19,7 @@ const ContentPage = () => {
       <Grid size={{md: 3}} sx={{
         top: "1px", 
         overflowY: "auto",
-        ...(!isMobile && { height: "calc(100vh - 65px)" }),
+        ...(!isMobile && { height: "calc(100vh - 85px)" }),
         boxShadow: 2,
       }}>
         <SidebarMenu />
