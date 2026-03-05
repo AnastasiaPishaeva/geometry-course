@@ -1,17 +1,40 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import LessonContent from "../widgets/LessonContent";
 import Tabs from "../widgets/Tabs";
-import type { Lesson, Topic } from "../entities/types";
+import type { Lesson, Topic, Section } from "../entities/types";
 import SidebarMenu from "../widgets/CourseSidebar";
-import { Grid, Typography, useMediaQuery } from "@mui/material";
-import menuData from "../assets/menuData.json";
+import { Grid, } from "@mui/material";
+import api from "../api/api";
+import { useQuery } from "@tanstack/react-query";
 
 const ContentPage = () => {
-  const { sectionId } = useParams();
-  const activeTopicId = Number(sectionId);
-  const activeTopic = menuData.find(t => t.id === activeTopicId);
-  if (!activeTopic) return <div>Тема не найдена</div>
+  const { lessonId } = useParams();
+  if (!lessonId) {
+    return <div>Тема не найдена</div>
+  }
+
+  const fetchSection = async (): Promise<Section[]> => {
+    try {
+      const res = await api.get<Section[]>(`api/v1/lessons/${lessonId}/sections`);
+      return res.data;
+    } catch (error) {
+      console.error("Ошибка загрузки секций", error);
+      throw new Error("Ошибка загрузки тем");
+  }
+  };
+
+  const { data: sections, isLoading, error } = useQuery({
+    queryKey: ["sections"],
+    queryFn: fetchSection,
+  });
+  if (!sections) return <div>Нет информации...</div>;
+
+  if (isLoading) return <div>Загрузка...</div>;
+  if (error) {
+    console.error("Ошибка при запросе секций:", error);
+    return <div>Ошибка загрузки</div>;
+  }
 
   return (
     <Grid container sx={{ height: "100%", overflow: "hidden" }}>
@@ -24,18 +47,18 @@ const ContentPage = () => {
         <SidebarMenu />
       </Grid>
 
-      {/* <Grid size={{md: 9}}
+      <Grid size={{xs: 9}}
           component="main" sx={{
             flexGrow: 1,
             p: 2,
             overflowY: "auto",
-            height: "calc(100vh - 65px)", 
+            height: "calc(100vh - 85px)", 
             '&::-webkit-scrollbar': {
             display: 'none', 
           },
           }}>
-          <LessonContent topic={activeTopic} />
-      </Grid> */}
+          <LessonContent sections = {sections} />
+      </Grid>
     </Grid>
   );
 };

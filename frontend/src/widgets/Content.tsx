@@ -1,20 +1,19 @@
 import { useTheme } from "@mui/material/styles";
-import type { Lesson, Topic } from "../entities/types";
+import type { Lesson, Topic, Section } from "../entities/types";
 import { Typography } from "@mui/material";
 
 interface ContentProps {
-  lesson: Lesson;
+  section: Section;
 }
 
-const Content: React.FC<ContentProps> = ({ lesson }) => {
-  const theme = useTheme();
+const Content: React.FC<ContentProps> = ({ section }) => {
   return (
     <>
       <Typography variant="h2">
-        {lesson.title}
+        {section.title}
       </Typography>
       <Typography variant="text1"> 
-        Текст какой-то будет из базы данных
+        {section.theory_text}
       </Typography>
     </>
   );

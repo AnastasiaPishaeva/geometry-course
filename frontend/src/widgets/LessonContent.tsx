@@ -2,26 +2,26 @@ import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
 import Tabs from "./Tabs";
 import Content from "./Content";
-import type { Lesson, Topic } from "../entities/types";
+import type { Lesson, Topic, Section} from "../entities/types";
+import { useParams } from "react-router-dom";
 
 
 interface LessonContentProps {
-  topic: Topic;
+  sections: Section[];
 }
 
-const LessonContent: React.FC<LessonContentProps> = ({ topic }) => {
-  const [activeLessonIndex, setActiveLessonIndex] = useState(0);
+const LessonContent: React.FC<LessonContentProps> = ({ sections }) => {
+  const {sectionId, lessonId} = useParams();
+  if (!sectionId) return <div>Не выбрана секция...</div>;
 
-  const activeLesson = topic.lessons[activeLessonIndex];
+  const activeSection = sections.find(t => t.order_number === Number(sectionId));
 
   return (
     <>
       <Tabs
-        lessons={topic.lessons}
-        onTabChange={setActiveLessonIndex}
+        lesson={Number(lessonId)}
       />
-
-      <Content lesson={activeLesson} />
+      <Content section={activeSection!} />
     </>
   );
 };

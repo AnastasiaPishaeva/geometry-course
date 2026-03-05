@@ -1,16 +1,16 @@
 import React from "react";
 import { useTheme } from "@mui/material/styles";
-
+import api from "../api/api";
 import TheoryUnfinishedButton from "../assets/Tabs/TheoryUnfinished.png";
 import TheoryFinishedButton from "../assets/Tabs/TheoryFinished.png";
 import GameUnfinishedButton from "../assets/Tabs/GameUnfinished.png";
 import GameFinishedButton from "../assets/Tabs/GameUnfinished.png";
 
-import type { Lesson } from "../entities/types";
+import type { Lesson, SectionProgressInfo } from "../entities/types";
+import { useQuery } from "@tanstack/react-query";
 
 interface TabsProps {
-  lessons: Lesson[];
-  onTabChange: (index: number) => void;
+  lesson: number;
 }
 
 const images = {
@@ -24,8 +24,26 @@ const images = {
   },
 };
 
-const Tabs: React.FC<TabsProps> = ({ lessons, onTabChange }) => {
+const Tabs: React.FC<TabsProps> = ({ lesson}) => {
   const theme = useTheme();
+  const fetchSectionProgress = async (): Promise<SectionProgressInfo[]> => {
+    try {
+      const res = await api.get<SectionProgressInfo[]>(`api/v1/lessons/${lesson}/sections`);
+      return res.data;
+    } catch (error) {
+      console.error("Ошибка загрузки прогресса по секциям", error);
+      throw new Error("Ошибка загрузки прогресса по секциям");
+  }
+  };
+
+  const { data: progress, isLoading, error } = useQuery({
+    queryKey: ["sections_progress"],
+    queryFn: fetchSectionProgress,
+  });
+
+  if (!progress) return <div>Ошибка загрузки прогресса по секциям</div>;
+  if (isLoading) return <div>Загузка...</div>;
+  if (error) return <div>Ошибка загрузки прогресса по секциям..</div>
 
   return (
     <div
@@ -36,19 +54,18 @@ const Tabs: React.FC<TabsProps> = ({ lessons, onTabChange }) => {
         marginBottom: theme.spacing(4),
       }}
     >
-      {lessons.map((lesson, index) => {
-        const isLast = index === lessons.length - 1;
-        const type = isLast ? "game" : "theory";
+      {progress.map((section, index) => {
+        const type = "theory";
 
         const imageSrc =
-          images[type][lesson.isCompleted ? "finished" : "unfinished"];
+          images[type][section.completed ? "finished" : "unfinished"];
 
         return (
           <img
-            key={lesson.id}
+            key={section.section_id}
             src={imageSrc}
-            alt={lesson.title}
-            onClick={() => onTabChange(index)}
+            alt={section.title}
+            // onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesson.order_number}/section/1`)}}
             style={{ cursor: "pointer" }}
           />
         );
