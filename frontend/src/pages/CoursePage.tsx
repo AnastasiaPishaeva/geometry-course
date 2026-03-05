@@ -8,7 +8,6 @@ import { Grid, Typography, useMediaQuery } from "@mui/material";
 import menuData from "../assets/menuData.json";
 
 const ContentPage = () => {
-  const isMobile = useMediaQuery("(max-width: 900px)");
   const { sectionId } = useParams();
   const activeTopicId = Number(sectionId);
   const activeTopic = menuData.find(t => t.id === activeTopicId);
@@ -16,10 +15,10 @@ const ContentPage = () => {
 
   return (
     <Grid container sx={{ height: "100%", overflow: "hidden" }}>
-      <Grid size={{md: 3}} sx={{
+      <Grid size={{xs: 3}} sx={{
         top: "1px", 
         overflowY: "auto",
-        ...(!isMobile && { height: "calc(100vh - 85px)" }),
+        height: "calc(100vh - 85px)",
         boxShadow: 2,
       }}>
         <SidebarMenu />

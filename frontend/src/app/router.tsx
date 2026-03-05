@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import CoursePage from '../pages/CoursePage';
+import HomePage from '../pages/HomePage.tsx';
 import Header from '../widgets/Header.tsx';
 import {Box} from "@mui/material";
 export const AppRoutes = () => {
@@ -12,9 +13,7 @@ export const AppRoutes = () => {
       <Header/>
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
-        {/* <Route path="/" element={<HomePage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/profile" element={<ProfilePage />} /> */}
+        <Route path="/geomGame" element={<HomePage />}/>
         <Route path="/course/:sectionId/lesson/:lessonId" element={<CoursePage />} />
         </Routes>
       </Box>
