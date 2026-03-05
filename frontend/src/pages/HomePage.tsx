@@ -1,4 +1,4 @@
-﻿import Banner from "../widgets/Banner.tsx";
+import Banner from "../widgets/Banner.tsx";
 import {Grid, Typography, Box} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CourseProgramItem from "../widgets/CourseProgramItem.tsx";

@@ -12,7 +12,6 @@ import {
   IconButton
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MenuIcon from "@mui/icons-material/Menu";
 import { styled } from "@mui/system";
 import {useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
@@ -40,12 +39,6 @@ const SidebarMenu = () => {
   const activeSectionId = Number(sectionId);
   const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
-  const [open, setOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 900px)");
-
-  const toggleDrawer = (open: boolean) => {
-    setOpen(open);
-  };
   const [openSections, setOpenSections] = useState<number[]>([]);
 
   const fetchTopics = async (): Promise<Topic[]> => {
@@ -79,24 +72,13 @@ const SidebarMenu = () => {
 
   return (
     <Grid sx={{ height: "100%", width: "100%" }}>
-      {isMobile && (
-        <IconButton
-          onClick={() => toggleDrawer(true)}
-          sx={{ position: "fixed", top: 16, left: 16, zIndex: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
       <StyledDrawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={isMobile ? open : true}
-        onClose={() => toggleDrawer(false)}
+        variant={"permanent"}
       >
         <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
         {topics?.map((section, index) => {
           const hasLessons = section.lessons.length > 0
           const isSectionActive = section.topic_id === activeSectionId;
-          // console.log(topics)
           if (hasLessons){
             return (
             <Accordion 
@@ -107,34 +89,40 @@ const SidebarMenu = () => {
                 onChange={() => toggleSection(section.topic_id)}
                 sx={{
                   background: "none", 
-                  "&::before": { display: "none" }
+                  "&::before": { display: "none" },
                 }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls={`panel${index}-content`}
                   id={`panel${index}-header`}
+                  sx={{padding: theme.spacing(0, 6),
+                    "&:focus": {
+                      outline: "none",
+                    },
+                  }}
                 >
                   <Typography variant="h4" sx={{color: theme.palette.primaryScale[100] }}>
-                    {section.title}
+                    {section.order_number}. {section.title}
                   </Typography>
                 </AccordionSummary>
 
                 <AccordionDetails>
                   <List>
                     {section.lessons.map((lesson, lesIndex) => {
-                          const isActive = isSectionActive && index === activeLessonIndex;
-
+                          const isActive = lesson.order_number === activeLessonIndex;
                           return (
                           <ListItemButton 
                           key={lesIndex}
-                          onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesIndex}`)}}
+                          onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesson.order_number}`)}}
                           selected={isActive}
                           sx={{
                             borderRadius: theme.shape.borderRadius,
                             "&:hover": {
-                              backgroundColor: `rgba(${theme.palette.primaryScale[700]}, 0.85)`
+                              backgroundColor: theme.palette.primaryScale[800]
                             },
+                            backgroundColor: "inherit",
+                            "&.Mui-selected": {backgroundColor: theme.palette.primaryScale[700]},
                           }}>
                             <Typography variant="h5"> {lesson.title} </Typography>
                           </ListItemButton>
@@ -152,10 +140,15 @@ const SidebarMenu = () => {
                 selected={isSectionActive}
                 sx={{
                   borderRadius: theme.shape.borderRadius,
+                  padding: theme.spacing(3, 6),
+                  "&:hover": {
+                    backgroundColor: theme.palette.primaryScale[800]
+                  },
+                  "&.Mui-selected, &.Mui-selected:hover": {backgroundColor: theme.palette.primaryScale[700]},
                 }}
               >
                 <Typography variant="h4" >
-                  {section.title}
+                  {section.order_number}. {section.title}
                 </Typography>
               </ListItemButton>
             )

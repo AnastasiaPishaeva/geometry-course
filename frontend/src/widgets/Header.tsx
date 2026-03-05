@@ -57,7 +57,7 @@ const Header = () => {
                   height: "auto",
                   },
          }}>
-          <Link to="/course">
+          <Link to="/geomGame">
             <img src={logo} alt="illustration" />
           </Link>
         </Box>
