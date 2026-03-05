@@ -114,7 +114,7 @@ const SidebarMenu = () => {
                           return (
                           <ListItemButton 
                           key={lesIndex}
-                          onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesson.order_number}`)}}
+                          onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesson.order_number}/section/1`)}}
                           selected={isActive}
                           sx={{
                             borderRadius: theme.shape.borderRadius,

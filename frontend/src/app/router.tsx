@@ -1,20 +1,10 @@
-<<<<<<< HEAD
 import { Route } from 'react-router-dom';
 import HomePage from "../pages/HomePage.tsx";
 import {Routes} from "react-router-dom";
 import CoursePage from "../pages/CoursePage.tsx";
-
-export const AppRoutes = () => {
-    return (
-        <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/course/:sectionId/lesson/:lessonId" element={<CoursePage />} />
-=======
-import { Route, Routes } from 'react-router-dom';
-import CoursePage from '../pages/CoursePage';
-import HomePage from '../pages/HomePage.tsx';
 import Header from '../widgets/Header.tsx';
 import {Box} from "@mui/material";
+
 export const AppRoutes = () => {
     return (
         <Box sx={{ 
@@ -26,8 +16,7 @@ export const AppRoutes = () => {
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
         <Route path="/geomGame" element={<HomePage />}/>
-        <Route path="/course/:sectionId/lesson/:lessonId" element={<CoursePage />} />
->>>>>>> 48a4db90 (fix accordion)
+        <Route path="/course/:sectionId/lesson/:lessonId/section/:sectionId" element={<CoursePage />} />
         </Routes>
       </Box>
       </Box>
