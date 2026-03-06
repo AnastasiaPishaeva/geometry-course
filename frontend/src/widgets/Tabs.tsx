@@ -37,7 +37,7 @@ const Tabs: React.FC<TabsProps> = ({ lesson}) => {
   };
 
   const { data: progress, isLoading, error } = useQuery({
-    queryKey: ["sections_progress"],
+    queryKey: ["sections_progress", lesson],
     queryFn: fetchSectionProgress,
   });
 
@@ -49,12 +49,14 @@ const Tabs: React.FC<TabsProps> = ({ lesson}) => {
     <div
       style={{
         display: "flex",
-        justifyContent: "center",
         gap: theme.spacing(2),
         marginBottom: theme.spacing(4),
+        height: "32px",
+        width: "auto",
+        marginLeft: "auto"
       }}
     >
-      {progress.map((section, index) => {
+      {progress.map((section) => {
         const type = "theory";
 
         const imageSrc =
