@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -7,9 +7,7 @@ import {
   List,
   ListItemButton,
   Grid,
-  useMediaQuery,
   Drawer,
-  IconButton
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styled } from "@mui/system";
@@ -35,11 +33,11 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 
 const SidebarMenu = () => {
   const navigate = useNavigate();
-  const { sectionId, lessonId } = useParams();
-  const activeSectionId = Number(sectionId);
+  const { topicId, lessonId } = useParams();
+  const activeTopicId = Number(topicId);
   const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
-  const [openSections, setOpenSections] = useState<number[]>([]);
+  const [openTopics, setOpenTopics] = useState<number[]>([]);
 
   const fetchTopics = async (): Promise<Topic[]> => {
     try {
@@ -56,8 +54,8 @@ const SidebarMenu = () => {
     queryFn: fetchTopics,
   });
 
-  const toggleSection = (topicId: number) => {
-    setOpenSections(prev =>
+  const toggleTopic = (topicId: number) => {
+    setOpenTopics(prev =>
       prev.includes(topicId)
         ? prev.filter(id => id !== topicId)
         : [...prev, topicId]
@@ -76,17 +74,17 @@ const SidebarMenu = () => {
         variant={"permanent"}
       >
         <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
-        {topics?.map((section, index) => {
-          const hasLessons = section.lessons.length > 0
-          const isSectionActive = section.topic_id === activeSectionId;
+        {topics?.map((topic, index) => {
+          const hasLessons = topic.lessons.length > 0
+          const isSectionActive = topic.order_number === activeTopicId;
           if (hasLessons){
             return (
             <Accordion 
                 key={index}
                 disableGutters
                 elevation={0}
-                expanded={openSections.includes(section.topic_id)}
-                onChange={() => toggleSection(section.topic_id)}
+                expanded={openTopics.includes(topic.topic_id)}
+                onChange={() => toggleTopic(topic.topic_id)}
                 sx={{
                   background: "none", 
                   "&::before": { display: "none" },
@@ -103,18 +101,18 @@ const SidebarMenu = () => {
                   }}
                 >
                   <Typography variant="h4" sx={{color: theme.palette.primaryScale[100] }}>
-                    {section.order_number}. {section.title}
+                    {topic.order_number}. {topic.title}
                   </Typography>
                 </AccordionSummary>
 
                 <AccordionDetails>
                   <List>
-                    {section.lessons.map((lesson, lesIndex) => {
+                    {topic.lessons.map((lesson, lesIndex) => {
                           const isActive = lesson.order_number === activeLessonIndex;
                           return (
                           <ListItemButton 
                           key={lesIndex}
-                          onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesson.order_number}/section/1`)}}
+                          onClick={() => {navigate(`/course/${topic.order_number}/lesson/${lesson.order_number}/section/1`)}}
                           selected={isActive}
                           sx={{
                             borderRadius: theme.shape.borderRadius,
@@ -136,7 +134,7 @@ const SidebarMenu = () => {
             return (
               <ListItemButton
                 key={index}
-                onClick={() => navigate(`/course/${section.topic_id}`)}
+                onClick={() => navigate(`/course/${topic.order_number}`)}
                 selected={isSectionActive}
                 sx={{
                   borderRadius: theme.shape.borderRadius,
@@ -148,7 +146,7 @@ const SidebarMenu = () => {
                 }}
               >
                 <Typography variant="h4" >
-                  {section.order_number}. {section.title}
+                  {topic.order_number}. {topic.title}
                 </Typography>
               </ListItemButton>
             )

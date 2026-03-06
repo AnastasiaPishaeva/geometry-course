@@ -27,7 +27,7 @@ const ContentPage = () => {
   };
 
   const { data: sections, isLoading, error } = useQuery({
-    queryKey: ["sections", lessonId],
+    queryKey: ["sections", lessonId], //секции конкретного урока
     queryFn: fetchSection,
   });
   if (!sections) return <div>Нет информации...</div>;
