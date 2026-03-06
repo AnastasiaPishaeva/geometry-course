@@ -1,5 +1,4 @@
-import { useTheme } from "@mui/material/styles";
-import type { Lesson, Topic, Section } from "../entities/types";
+import type { Section } from "../entities/types";
 import { Typography } from "@mui/material";
 
 interface ContentProps {

@@ -14,7 +14,7 @@ export const AppRoutes = () => {
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
         <Route path="/geomGame" element={<HomePage />}/>
-        <Route path="/course/:sectionId/lesson/:lessonId/section/:sectionId" element={<CoursePage />} />
+        <Route path="/course/:topicId/lesson/:lessonId/section/:sectionId" element={<CoursePage />} />
         </Routes>
       </Box>
       </Box>
