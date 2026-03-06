@@ -13,6 +13,7 @@ interface LessonContentProps {
 const LessonContent: React.FC<LessonContentProps> = ({ sections }) => {
   const {sectionId, lessonId} = useParams();
   if (!sectionId) return <div>Не выбрана секция...</div>;
+  if (!lessonId) return <div>Не выбран урок...</div>
 
   const activeSection = sections.find(t => t.order_number === Number(sectionId));
 
@@ -21,7 +22,7 @@ const LessonContent: React.FC<LessonContentProps> = ({ sections }) => {
       <Tabs
         lesson={Number(lessonId)}
       />
-      <Content section={activeSection!} />
+      <Content section={activeSection} />
     </>
   );
 };
