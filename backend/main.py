@@ -97,7 +97,7 @@ def get_sections_status_for_lesson(user_id: int, lesson_id: int):
 
         sections_result = connection.execute(
             text("""
-                SELECT section_id, title
+                SELECT section_id, title, type, order_number
                 FROM sections
                 WHERE lesson_id = :lesson_id
                 ORDER BY order_number
@@ -203,3 +203,24 @@ def add_section_progress(
     }
 
 app.include_router(api)
+
+@api.get("/courses/{course_id}/introduction")
+def get_course_introduction(course_id: int):
+    """
+    Возвращает текст введения курса.
+    """
+
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT introduction
+                FROM courses
+                WHERE course_id = :course_id
+            """),
+            {"course_id": course_id}
+        ).fetchone()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    return {"introduction": result._mapping["introduction"]}
