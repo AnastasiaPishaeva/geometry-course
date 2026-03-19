@@ -4,7 +4,7 @@ import LessonContent from "../widgets/LessonContent";
 import Tabs from "../widgets/Tabs";
 import type { Lesson, Topic } from "../entities/types";
 import SidebarMenu from "../widgets/CourseSidebar";
-import { Grid, useMediaQuery } from "@mui/material";
+import { Grid, Typography, useMediaQuery } from "@mui/material";
 import menuData from "../assets/menuData.json";
 
 const ContentPage = () => {
@@ -25,7 +25,7 @@ const ContentPage = () => {
         <SidebarMenu />
       </Grid>
 
-      <Grid size={{md: 9}}
+      {/* <Grid size={{md: 9}}
           component="main" sx={{
             flexGrow: 1,
             p: 2,
@@ -36,7 +36,7 @@ const ContentPage = () => {
           },
           }}>
           <LessonContent topic={activeTopic} />
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

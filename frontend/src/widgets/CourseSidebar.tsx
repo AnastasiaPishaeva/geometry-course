@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -16,13 +16,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { styled } from "@mui/system";
 import {useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
-import menuData from "../assets/menuData.json"
-
-const Content = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[500],
-  paddingLeft: theme.spacing(2),
-  paddingTop: theme.spacing(2)
-}));
+import { useQuery } from "@tanstack/react-query";
+import type { Topic } from "../entities/types";
+import api from "../api/api";
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   height: "100%",
@@ -49,29 +45,36 @@ const SidebarMenu = () => {
   const toggleDrawer = (open: boolean) => {
     setOpen(open);
   };
-  const [openSection, setOpenSection] = useState<boolean[]>(
-    menuData.map(() => false)
-  );
+  const [openSections, setOpenSections] = useState<number[]>([]);
 
-  const toggleSection = (index: number) => {
-    setOpenSection((prevState) =>
-      prevState.map((isOpen, i) => (i === index ? !isOpen : isOpen))
-    );
+  const fetchTopics = async (): Promise<Topic[]> => {
+    try {
+      const res = await api.get<Topic[]>("api/v1/courses/1/topics-lessons");
+      return res.data;
+    } catch (error) {
+      console.error("Ошибка загрузки тем", error);
+      throw new Error("Ошибка загрузки тем");
+  }
   };
 
-  // useEffect(() => {
-  //   if (!sectionId) return;
+  const { data: topics, isLoading, error } = useQuery({
+    queryKey: ["topics"],
+    queryFn: fetchTopics,
+  });
 
-  //   const index = menuData.findIndex(
-  //     (section) => section.id === Number(sectionId)
-  //   );
-
-  //   if (index !== -1) {
-  //     setOpenSection(prev =>
-  //       prev.map((_, i) => i === index)
-  //     );
-  //   }
-  // }, [sectionId]);
+  const toggleSection = (topicId: number) => {
+    setOpenSections(prev =>
+      prev.includes(topicId)
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
+    );
+  };
+  
+  if (isLoading) return <div>Загрузка...</div>;
+  if (error) {
+    console.error("Ошибка при запросе тем:", error);
+    return <div>Ошибка загрузки</div>;
+  }
 
   return (
     <Grid sx={{ height: "100%", width: "100%" }}>
@@ -88,22 +91,21 @@ const SidebarMenu = () => {
         open={isMobile ? open : true}
         onClose={() => toggleDrawer(false)}
       >
-        <Content variant = "h4">СОДЕРЖАНИЕ</Content>
         <Grid sx={{ flexGrow: "1" }}>
-        {menuData.map((section, index) => {
-          const hasLessons = section.lessons && section.lessons.length > 0
-          const isSectionActive = section.id === activeSectionId;
-
+        {topics?.map((section, index) => {
+          const hasLessons = section.lessons.length > 0
+          const isSectionActive = section.topic_id === activeSectionId;
+          // console.log(topics)
           if (hasLessons){
             return (
             <Accordion 
                 key={index}
                 disableGutters
                 elevation={0}
-                expanded={isSectionActive}
-                onChange={() => toggleSection(index)}
+                expanded={openSections.includes(section.topic_id)}
+                onChange={() => toggleSection(section.topic_id)}
                 sx={{
-                  background: "none",
+                  background: "none", 
                   "&::before": { display: "none" }
                 }}
               >
@@ -112,20 +114,20 @@ const SidebarMenu = () => {
                   aria-controls={`panel${index}-content`}
                   id={`panel${index}-header`}
                 >
-                  <Typography sx={{color: theme.palette.primaryScale[100] }}>
+                  <Typography variant="h4" sx={{color: theme.palette.primaryScale[100] }}>
                     {section.title}
                   </Typography>
                 </AccordionSummary>
 
                 <AccordionDetails>
                   <List>
-                    {section.lessons!.map((lesson, lesIndex) => {
+                    {section.lessons.map((lesson, lesIndex) => {
                           const isActive = isSectionActive && index === activeLessonIndex;
 
                           return (
                           <ListItemButton 
                           key={lesIndex}
-                          onClick={() => {navigate(`/course/${section.id}/lesson/${lesIndex}`)}}
+                          onClick={() => {navigate(`/course/${section.topic_id}/lesson/${lesIndex}`)}}
                           selected={isActive}
                           sx={{
                             borderRadius: theme.shape.borderRadius,
@@ -133,7 +135,7 @@ const SidebarMenu = () => {
                               backgroundColor: `rgba(${theme.palette.primaryScale[700]}, 0.85)`
                             },
                           }}>
-                            <Typography> {lesson} </Typography>
+                            <Typography variant="h5"> {lesson.title} </Typography>
                           </ListItemButton>
                     )})
                     }
@@ -145,13 +147,13 @@ const SidebarMenu = () => {
             return (
               <ListItemButton
                 key={index}
-                onClick={() => navigate(`/course/${section.id}`)}
+                onClick={() => navigate(`/course/${section.topic_id}`)}
                 selected={isSectionActive}
                 sx={{
                   borderRadius: theme.shape.borderRadius,
                 }}
               >
-                <Typography>
+                <Typography variant="h4" >
                   {section.title}
                 </Typography>
               </ListItemButton>
