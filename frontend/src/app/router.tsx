@@ -4,6 +4,7 @@ import {Routes} from "react-router-dom";
 import CoursePage from "../pages/CoursePage.tsx";
 import Header from '../widgets/Header.tsx';
 import {Box} from "@mui/material";
+import { Navigate } from "react-router-dom";
 
 export const AppRoutes = () => {
     return (
@@ -15,8 +16,11 @@ export const AppRoutes = () => {
       <Header/>
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
-        <Route path="/geomGame" element={<HomePage />}/>
-        <Route path="/course/:topicId/lesson/:lessonId/section/:sectionId" element={<CoursePage />} />
+        <Route path="/" element={<Navigate to="/geomGame" />} />
+        <Route path="/geomGame" element={<HomePage />} />
+        <Route path="/course/:topicId" element={<CoursePage />}>
+            <Route path="lesson/:lessonId/section/:sectionId" element={<CoursePage />} />
+        </Route>
         </Routes>
       </Box>
       </Box>

@@ -34,10 +34,9 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 const SidebarMenu = () => {
   const navigate = useNavigate();
   const { topicId, lessonId } = useParams();
-  const activeTopicId = Number(topicId);
+  const activeTopicIndex = Number(topicId);
   const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
-  const [openTopics, setOpenTopics] = useState<number[]>([]);
 
   const fetchTopics = async (): Promise<Topic[]> => {
     try {
@@ -53,14 +52,6 @@ const SidebarMenu = () => {
     queryKey: ["topics"],
     queryFn: fetchTopics,
   });
-
-  const toggleTopic = (topicId: number) => {
-    setOpenTopics(prev =>
-      prev.includes(topicId)
-        ? prev.filter(id => id !== topicId)
-        : [...prev, topicId]
-    );
-  };
   
   if (isLoading) return <div>Загрузка...</div>;
   if (error) {
@@ -76,15 +67,14 @@ const SidebarMenu = () => {
         <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
         {topics?.map((topic, index) => {
           const hasLessons = topic.lessons.length > 0
-          const isSectionActive = topic.order_number === activeTopicId;
+          const isTopicActive = topic.topic_id === activeTopicIndex;
           if (hasLessons){
             return (
             <Accordion 
                 key={index}
                 disableGutters
                 elevation={0}
-                expanded={openTopics.includes(topic.topic_id)}
-                onChange={() => toggleTopic(topic.topic_id)}
+                expanded={isTopicActive}
                 sx={{
                   background: "none", 
                   "&::before": { display: "none" },
@@ -108,11 +98,11 @@ const SidebarMenu = () => {
                 <AccordionDetails>
                   <List>
                     {topic.lessons.map((lesson, lesIndex) => {
-                          const isActive = lesson.order_number === activeLessonIndex;
+                          const isActive = lesson.lesson_id === activeLessonIndex;
                           return (
                           <ListItemButton 
                           key={lesIndex}
-                          onClick={() => {navigate(`/course/${topic.order_number}/lesson/${lesson.order_number}/section/1`)}}
+                          onClick={() => {navigate(`/course/${topic.topic_id}/lesson/${lesson.lesson_id}/section/1`)}}
                           selected={isActive}
                           sx={{
                             borderRadius: theme.shape.borderRadius,
@@ -134,8 +124,8 @@ const SidebarMenu = () => {
             return (
               <ListItemButton
                 key={index}
-                onClick={() => navigate(`/course/${topic.order_number}`)}
-                selected={isSectionActive}
+                onClick={() => navigate(`/course/${topic.topic_id}`)}
+                selected={isTopicActive}
                 sx={{
                   borderRadius: theme.shape.borderRadius,
                   padding: theme.spacing(3, 6),

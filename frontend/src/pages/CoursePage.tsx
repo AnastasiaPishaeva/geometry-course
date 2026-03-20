@@ -13,6 +13,7 @@ const ContentPage = () => {
   const theme = useTheme();
   const { lessonId } = useParams();
   if (!lessonId) {
+    // const sections = {"section_id":0,"title":"Что такое треугольник","theory_text":"Треугольник — это фигура с тремя сторонами...","order_number":1};
     return <div>Тема не найдена</div>
   }
 
