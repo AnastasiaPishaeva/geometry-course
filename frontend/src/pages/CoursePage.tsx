@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import LessonContent from "../widgets/LessonContent";
-import Tabs from "../widgets/Tabs";
 import type { Lesson, Topic, Section } from "../entities/types";
 import SidebarMenu from "../widgets/CourseSidebar";
 import { Grid, } from "@mui/material";

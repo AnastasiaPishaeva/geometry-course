@@ -22,4 +22,6 @@ export type SectionProgressInfo = {
   section_id: number;
   title: string;
   completed: boolean;
+  type: "theory" | "game";
+  order_number: number;
 }
