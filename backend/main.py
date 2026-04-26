@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
+from pydantic import BaseModel, Field
 import os
 
 app = FastAPI(
@@ -20,11 +21,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg2://juliachezryakova@localhost:5432/geometry_course"
+)
 
 engine = create_engine(DATABASE_URL)
 
 api = APIRouter(prefix="/api/v1")
+
+
+class ProgressPayload(BaseModel):
+    stars_earned: int = Field(0, ge=0)
 
 @api.get("/course")
 def get_course():
@@ -79,7 +87,7 @@ def get_sections_for_lesson(lesson_id: int):
     with engine.connect() as connection:
         result = connection.execute(
             text("""
-                SELECT section_id, title, theory_text, order_number
+                SELECT section_id, title, theory_text, order_number, status
                 FROM sections
                 WHERE lesson_id = :lesson_id
                 ORDER BY order_number
@@ -94,10 +102,9 @@ def get_sections_for_lesson(lesson_id: int):
 @api.get("/users/{user_id}/lessons/{lesson_id}/sections-status")
 def get_sections_status_for_lesson(user_id: int, lesson_id: int):
     with engine.connect() as connection:
-
-        sections_result = connection.execute(
+        result = connection.execute(
             text("""
-                SELECT section_id, title, type, order_number
+                SELECT section_id, status
                 FROM sections
                 WHERE lesson_id = :lesson_id
                 ORDER BY order_number
@@ -105,29 +112,7 @@ def get_sections_status_for_lesson(user_id: int, lesson_id: int):
             {"lesson_id": lesson_id}
         )
 
-        sections = [dict(row._mapping) for row in sections_result]
-        section_ids = [s["section_id"] for s in sections]
-
-        progress_map = {}
-
-        if section_ids:
-            progress_result = connection.execute(
-                text("""
-                    SELECT section_id, completed
-                    FROM user_progress
-                    WHERE user_id = :user_id
-                    AND section_id = ANY(:section_ids)
-                """),
-                {"user_id": user_id, "section_ids": section_ids}
-            )
-
-            progress_map = {
-                row._mapping["section_id"]: row._mapping["completed"]
-                for row in progress_result
-            }
-
-        for section in sections:
-            section["completed"] = progress_map.get(section["section_id"], False)
+        sections = [dict(row._mapping) for row in result]
 
     return sections
 
@@ -146,15 +131,94 @@ def get_user_stars(user_id: int):
     total_stars = result[0] if result and result[0] is not None else 0
     return {"total_stars": total_stars}
 
+@api.post("/users/{user_id}/sections/{section_id}/status")
+def set_section_completed(
+    user_id: int,
+    section_id: int,
+    completed: bool = Body(True, embed=True)
+):
+    """
+    Изменяет статус выполнения секции (обычно false -> true).
+    """
+
+    with engine.begin() as connection:
+        section_exists = connection.execute(
+            text("""
+                SELECT section_id
+                FROM sections
+                WHERE section_id = :section_id
+            """),
+            {"section_id": section_id}
+        ).fetchone()
+
+        if not section_exists:
+            raise HTTPException(status_code=404, detail="Section not found")
+
+        connection.execute(
+            text("""
+                UPDATE sections
+                SET status = :completed
+                WHERE section_id = :section_id
+            """),
+            {"completed": completed, "section_id": section_id}
+        )
+
+        existing = connection.execute(
+            text("""
+                SELECT user_progress_id
+                FROM user_progress
+                WHERE user_id = :user_id
+                AND section_id = :section_id
+            """),
+            {"user_id": user_id, "section_id": section_id}
+        ).fetchone()
+
+        if existing:
+            connection.execute(
+                text("""
+                    UPDATE user_progress
+                    SET completed = :completed
+                    WHERE user_id = :user_id
+                    AND section_id = :section_id
+                """),
+                {
+                    "completed": completed,
+                    "user_id": user_id,
+                    "section_id": section_id
+                }
+            )
+        else:
+            connection.execute(
+                text("""
+                    INSERT INTO user_progress
+                    (user_id, section_id, completed, stars_earned)
+                    VALUES (:user_id, :section_id, :completed, 0)
+                """),
+                {
+                    "user_id": user_id,
+                    "section_id": section_id,
+                    "completed": completed
+                }
+            )
+
+    return {
+        "message": "Section status updated successfully",
+        "section_id": section_id,
+        "completed": completed
+    }
+
+
 @api.post("/users/{user_id}/sections/{section_id}/progress")
 def add_section_progress(
     user_id: int,
     section_id: int,
-    stars_earned: int = Body(..., embed=True)
+    payload: ProgressPayload
 ):
     """
     Обновляет прогресс пользователя по секции.
     """
+
+    stars_earned = payload.stars_earned
 
     with engine.begin() as connection:
         existing = connection.execute(
@@ -203,24 +267,3 @@ def add_section_progress(
     }
 
 app.include_router(api)
-
-@api.get("/courses/{course_id}/introduction")
-def get_course_introduction(course_id: int):
-    """
-    Возвращает текст введения курса.
-    """
-
-    with engine.connect() as connection:
-        result = connection.execute(
-            text("""
-                SELECT introduction
-                FROM courses
-                WHERE course_id = :course_id
-            """),
-            {"course_id": course_id}
-        ).fetchone()
-
-    if not result:
-        raise HTTPException(status_code=404, detail="Course not found")
-
-    return {"introduction": result._mapping["introduction"]}
