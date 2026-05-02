@@ -3,10 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 from pydantic import BaseModel, Field
 import os
+import hashlib
+import secrets
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI(
     title="Geometry Course API",
-    description="Backend API для онлайн-курса по геометрии",
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -26,19 +29,202 @@ DATABASE_URL = os.getenv(
     "postgresql+psycopg2://juliachezryakova@localhost:5432/geometry_course"
 )
 
-engine = create_engine(DATABASE_URL)
-
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"sslmode": "require"},
+    pool_pre_ping=True
+)
 api = APIRouter(prefix="/api/v1")
-
 
 class ProgressPayload(BaseModel):
     stars_earned: int = Field(0, ge=0)
 
+
+class RegistrationPayload(BaseModel):
+    email: str
+    password: str = Field(min_length=6, max_length=128)
+    first_name: str = Field(min_length=1, max_length=100)
+    last_name: str = Field(min_length=1, max_length=100)
+
+
+class LoginPayload(BaseModel):
+    email: str
+    password: str = Field(min_length=1, max_length=128)
+
+
+class UpdateUserPayload(BaseModel):
+    email: str | None = None
+    first_name: str | None = Field(default=None, min_length=1, max_length=100)
+    last_name: str | None = Field(default=None, min_length=1, max_length=100)
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
+def hash_password(password: str, salt_hex: str | None = None) -> str:
+    if salt_hex is None:
+        salt_hex = secrets.token_hex(16)
+
+    salt = bytes.fromhex(salt_hex)
+    pwd_hash = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        100_000
+    ).hex()
+    return f"{salt_hex}${pwd_hash}"
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    try:
+        salt_hex, _ = stored_hash.split("$", 1)
+    except ValueError:
+        return False
+
+    candidate_hash = hash_password(password, salt_hex=salt_hex)
+    return secrets.compare_digest(candidate_hash, stored_hash)
+
+
+def ensure_auth_tables() -> None:
+    with engine.begin() as connection:
+        connection.execute(text("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id SERIAL PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                first_name VARCHAR(100),
+                last_name VARCHAR(100),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """))
+
+
+ensure_auth_tables()
+
+@api.post("/auth/register")
+def register(payload: RegistrationPayload):
+    email = normalize_email(payload.email)
+    password_hash = hash_password(payload.password)
+
+    with engine.begin() as connection:
+        existing_user = connection.execute(
+            text("SELECT user_id FROM users WHERE email = :email"),
+            {"email": email}
+        ).fetchone()
+
+        if existing_user:
+            raise HTTPException(status_code=409, detail="User already exists")
+
+        created_user = connection.execute(
+            text("""
+                INSERT INTO users (email, password_hash, first_name, last_name)
+                VALUES (:email, :password_hash, :first_name, :last_name)
+                RETURNING user_id, email, first_name, last_name
+            """),
+            {
+                "email": email,
+                "password_hash": password_hash,
+                "first_name": payload.first_name.strip(),
+                "last_name": payload.last_name.strip()
+            }
+        ).fetchone()
+
+    return {"user": dict(created_user._mapping)}
+
+
+@api.post("/auth/login")
+def login(payload: LoginPayload):
+    email = normalize_email(payload.email)
+
+    with engine.connect() as connection:
+        user_row = connection.execute(
+            text("""
+                SELECT user_id, email, first_name, last_name, password_hash
+                FROM users
+                WHERE email = :email
+            """),
+            {"email": email}
+        ).fetchone()
+
+    if not user_row:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    user = dict(user_row._mapping)
+
+    if not verify_password(payload.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return {"user": user}
+
+@api.get("/users/{user_id}")
+def get_user(user_id: int):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT user_id, email, first_name, last_name, created_at
+                FROM users
+                WHERE user_id = :user_id
+            """),
+            {"user_id": user_id}
+        ).fetchone()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return dict(result._mapping)
+
+
+@api.put("/users/{user_id}")
+def update_user(user_id: int, payload: UpdateUserPayload):
+    update_fields = {}
+
+    if payload.email:
+        update_fields["email"] = normalize_email(payload.email)
+    if payload.first_name:
+        update_fields["first_name"] = payload.first_name.strip()
+    if payload.last_name:
+        update_fields["last_name"] = payload.last_name.strip()
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    with engine.begin() as connection:
+        existing = connection.execute(
+            text("SELECT user_id FROM users WHERE user_id = :user_id"),
+            {"user_id": user_id}
+        ).fetchone()
+
+        if not existing:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if "email" in update_fields:
+            email_exists = connection.execute(
+                text("""
+                    SELECT user_id FROM users
+                    WHERE email = :email AND user_id != :user_id
+                """),
+                {**update_fields, "user_id": user_id}
+            ).fetchone()
+
+            if email_exists:
+                raise HTTPException(status_code=409, detail="Email already in use")
+
+        set_clause = ", ".join([f"{k} = :{k}" for k in update_fields])
+
+        query = text(f"""
+            UPDATE users
+            SET {set_clause}
+            WHERE user_id = :user_id
+            RETURNING user_id, email, first_name, last_name
+        """)
+
+        update_fields["user_id"] = user_id
+        updated = connection.execute(query, update_fields).fetchone()
+
+    return dict(updated._mapping)
+
 @api.get("/course")
 def get_course():
-    """
-    Возвращает название и описание курса для главной страницы.
-    """
     with engine.connect() as connection:
         result = connection.execute(
             text("SELECT title, description FROM courses LIMIT 1")
@@ -48,6 +234,7 @@ def get_course():
         raise HTTPException(status_code=404, detail="Course not found")
 
     return dict(result._mapping)
+
 
 @api.get("/courses/{course_id}/topics-lessons")
 def get_topics_with_lessons(course_id: int):
@@ -77,17 +264,18 @@ def get_topics_with_lessons(course_id: int):
                 {"topic_id": topic["topic_id"]}
             )
 
-            topic["lessons"] = [dict(row._mapping) for row in lessons_result]
+            topic["lessons"] = [dict(r._mapping) for r in lessons_result]
             topics.append(topic)
 
     return topics
+
 
 @api.get("/lessons/{lesson_id}/sections")
 def get_sections_for_lesson(lesson_id: int):
     with engine.connect() as connection:
         result = connection.execute(
             text("""
-                SELECT section_id, title, theory_text, order_number, status
+                SELECT section_id, title, theory_text, order_number
                 FROM sections
                 WHERE lesson_id = :lesson_id
                 ORDER BY order_number
@@ -95,80 +283,45 @@ def get_sections_for_lesson(lesson_id: int):
             {"lesson_id": lesson_id}
         )
 
-        sections = [dict(row._mapping) for row in result]
+    return [dict(r._mapping) for r in result]
 
-    return sections
 
 @api.get("/users/{user_id}/lessons/{lesson_id}/sections-status")
-def get_sections_status_for_lesson(user_id: int, lesson_id: int):
+def get_sections_status(user_id: int, lesson_id: int):
     with engine.connect() as connection:
         result = connection.execute(
             text("""
-                SELECT section_id, status
-                FROM sections
-                WHERE lesson_id = :lesson_id
-                ORDER BY order_number
+                SELECT 
+                    s.section_id,
+                    COALESCE(up.completed, FALSE) AS completed
+                FROM sections s
+                LEFT JOIN user_progress up
+                    ON up.section_id = s.section_id
+                    AND up.user_id = :user_id
+                WHERE s.lesson_id = :lesson_id
+                ORDER BY s.order_number
             """),
-            {"lesson_id": lesson_id}
+            {"user_id": user_id, "lesson_id": lesson_id}
         )
 
-        sections = [dict(row._mapping) for row in result]
-
-    return sections
-
-@api.get("/users/{user_id}/stars")
-def get_user_stars(user_id: int):
-    with engine.connect() as connection:
-        result = connection.execute(
-            text("""
-                SELECT SUM(stars_earned)
-                FROM user_progress
-                WHERE user_id = :user_id
-            """),
-            {"user_id": user_id}
-        ).fetchone()
-
-    total_stars = result[0] if result and result[0] is not None else 0
-    return {"total_stars": total_stars}
+    return [dict(r._mapping) for r in result]
 
 @api.post("/users/{user_id}/sections/{section_id}/status")
-def set_section_completed(
-    user_id: int,
-    section_id: int,
-    completed: bool = Body(True, embed=True)
-):
-    """
-    Изменяет статус выполнения секции (обычно false -> true).
-    """
-
+def set_section_completed(user_id: int, section_id: int, completed: bool = Body(True, embed=True)):
     with engine.begin() as connection:
-        section_exists = connection.execute(
-            text("""
-                SELECT section_id
-                FROM sections
-                WHERE section_id = :section_id
-            """),
+        exists = connection.execute(
+            text("SELECT 1 FROM sections WHERE section_id = :section_id"),
             {"section_id": section_id}
         ).fetchone()
 
-        if not section_exists:
+        if not exists:
             raise HTTPException(status_code=404, detail="Section not found")
-
-        connection.execute(
-            text("""
-                UPDATE sections
-                SET status = :completed
-                WHERE section_id = :section_id
-            """),
-            {"completed": completed, "section_id": section_id}
-        )
 
         existing = connection.execute(
             text("""
                 SELECT user_progress_id
                 FROM user_progress
-                WHERE user_id = :user_id
-                AND section_id = :section_id
+                WHERE user_id = :user_id AND section_id = :section_id
             """),
             {"user_id": user_id, "section_id": section_id}
         ).fetchone()
@@ -178,55 +331,30 @@ def set_section_completed(
                 text("""
                     UPDATE user_progress
                     SET completed = :completed
-                    WHERE user_id = :user_id
-                    AND section_id = :section_id
+                    WHERE user_id = :user_id AND section_id = :section_id
                 """),
-                {
-                    "completed": completed,
-                    "user_id": user_id,
-                    "section_id": section_id
-                }
+                {"completed": completed, "user_id": user_id, "section_id": section_id}
             )
         else:
             connection.execute(
                 text("""
-                    INSERT INTO user_progress
-                    (user_id, section_id, completed, stars_earned)
+                    INSERT INTO user_progress (user_id, section_id, completed, stars_earned)
                     VALUES (:user_id, :section_id, :completed, 0)
                 """),
-                {
-                    "user_id": user_id,
-                    "section_id": section_id,
-                    "completed": completed
-                }
+                {"user_id": user_id, "section_id": section_id, "completed": completed}
             )
 
-    return {
-        "message": "Section status updated successfully",
-        "section_id": section_id,
-        "completed": completed
-    }
+    return {"section_id": section_id, "completed": completed}
 
 
 @api.post("/users/{user_id}/sections/{section_id}/progress")
-def add_section_progress(
-    user_id: int,
-    section_id: int,
-    payload: ProgressPayload
-):
-    """
-    Обновляет прогресс пользователя по секции.
-    """
-
-    stars_earned = payload.stars_earned
-
+def add_progress(user_id: int, section_id: int, payload: ProgressPayload):
     with engine.begin() as connection:
         existing = connection.execute(
             text("""
                 SELECT user_progress_id
                 FROM user_progress
-                WHERE user_id = :user_id
-                AND section_id = :section_id
+                WHERE user_id = :user_id AND section_id = :section_id
             """),
             {"user_id": user_id, "section_id": section_id}
         ).fetchone()
@@ -235,35 +363,21 @@ def add_section_progress(
             connection.execute(
                 text("""
                     UPDATE user_progress
-                    SET completed = TRUE,
-                        stars_earned = :stars_earned
-                    WHERE user_id = :user_id
-                    AND section_id = :section_id
+                    SET completed = TRUE, stars_earned = :stars
+                    WHERE user_id = :user_id AND section_id = :section_id
                 """),
-                {
-                    "stars_earned": stars_earned,
-                    "user_id": user_id,
-                    "section_id": section_id
-                }
+                {"stars": payload.stars_earned, "user_id": user_id, "section_id": section_id}
             )
         else:
             connection.execute(
                 text("""
-                    INSERT INTO user_progress
-                    (user_id, section_id, completed, stars_earned)
-                    VALUES (:user_id, :section_id, TRUE, :stars_earned)
+                    INSERT INTO user_progress (user_id, section_id, completed, stars_earned)
+                    VALUES (:user_id, :section_id, TRUE, :stars)
                 """),
-                {
-                    "user_id": user_id,
-                    "section_id": section_id,
-                    "stars_earned": stars_earned
-                }
+                {"user_id": user_id, "section_id": section_id, "stars": payload.stars_earned}
             )
 
-    return {
-        "message": "Progress updated successfully",
-        "section_id": section_id,
-        "stars_earned": stars_earned
-    }
+    return {"section_id": section_id, "stars": payload.stars_earned}
+
 
 app.include_router(api)
