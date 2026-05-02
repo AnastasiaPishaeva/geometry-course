@@ -31,7 +31,6 @@ DATABASE_URL = os.getenv(
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"sslmode": "require"},
     pool_pre_ping=True
 )
 api = APIRouter(prefix="/api/v1")
