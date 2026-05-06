@@ -160,7 +160,7 @@ const LoginPage = () => {
                         }}
                     />
                 </div>
-                <SubmitButton disabled={!email || !password} onClick={handleLogin} sx = {{marginBottom: "64px"}}>Войти</SubmitButton>
+                <SubmitButton disabled={!email || !password} onClick={handleLogin} sx = {{marginBottom: "10px"}}>Войти</SubmitButton>
                 <Typography variant = "text1" sx ={{textAlign: "center", color: theme.palette.primaryScale[100], }}>
                     У вас еще нет аккаунта?{" "}
                     <Link 

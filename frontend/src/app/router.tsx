@@ -6,6 +6,7 @@ import Header from '../widgets/Header.tsx';
 import {Box} from "@mui/material";
 import { Navigate } from "react-router-dom";
 import LoginPage from '../pages/AuthPage.tsx';
+import RegistrationPage from '../pages/RegistrationPage.tsx';
 
 export const AppRoutes = () => {
     return (
@@ -23,6 +24,8 @@ export const AppRoutes = () => {
             <Route path="lesson/:lessonId/section/:sectionId" element={<CoursePage />} />
         </Route>
         <Route path="/authorization" element={<LoginPage />} />
+        <Route path="/registration" element={<RegistrationPage />} />
+
         </Routes>
       </Box>
       </Box>
