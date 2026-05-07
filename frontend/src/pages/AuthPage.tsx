@@ -92,7 +92,7 @@ const LoginPage = () => {
             const data = res.data;
 
             setUser(data.user);  // обновляем контекст
-            navigate("/curse/1/lesson/1/section/1");
+            navigate("/course/1/lesson/1/section/1");
         } catch (err) {
             console.error("Ошибка при входе:", err);
             setAuthErr(true);

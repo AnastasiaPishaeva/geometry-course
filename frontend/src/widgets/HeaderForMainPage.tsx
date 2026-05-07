@@ -61,12 +61,6 @@ const Header = () => {
             <img src={logo} alt="illustration" />
           </Link>
         </Box>
-        <Box >
-          <StyledNav>
-            {/* <StyledLink to="/home" isActive={currentPath === "home"}> Курс </StyledLink> */}
-            <StyledLink to="/personal-account" isActive={currentPath === "personal-accaunt"} > Личный кабинет </StyledLink>
-          </StyledNav>
-        </Box>
       </Grid>
     </StyledHeader>
   );

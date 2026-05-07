@@ -12,7 +12,6 @@ import { Grid, styled, useTheme } from "@mui/system";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../app/providers/AuthProvider';
 import api from "../api/api";
 import { motion, AnimatePresence } from "framer-motion";
 
