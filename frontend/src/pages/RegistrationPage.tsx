@@ -82,11 +82,16 @@ const RegistrationPage = () => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [step, setStep] = React.useState(1);
     const [direction, setDirection] = React.useState(1);
-
-    const { setUser } = useAuth();
     const navigate = useNavigate();
+    const isPasswordTooShort = password.length > 0 && password.length < 6;
 
     const handleRegister = async () => {
+        console.log({
+            email,
+            password,
+            first_name: firstName,
+            last_name: lastName,
+        });
         try {
             const res = await api.post("api/v1/auth/register", {
                 email,
@@ -96,8 +101,8 @@ const RegistrationPage = () => {
             });
 
             navigate("/authorization");
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            console.log(err.response.data);
             alert("Ошибка регистрации");
         }
     };
@@ -125,12 +130,6 @@ const RegistrationPage = () => {
         setDirection(1);
         setStep(2);
     };
-
-    const handleBack = () => {
-        setDirection(-1);
-        setStep(1);
-    };
-
 
     return (
         <Background>
@@ -185,6 +184,12 @@ const RegistrationPage = () => {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        error={isPasswordTooShort}
+                                        helperText={
+                                            isPasswordTooShort
+                                                ? "Пароль должен содержать минимум 6 символов"
+                                                : ""
+                                        }
                                         InputProps={{
                                             endAdornment: (
                                                 <InputAdornment position="end">
@@ -206,7 +211,7 @@ const RegistrationPage = () => {
                                     />
                                 </div>
                                 <SubmitButton
-                                    disabled={!email || !password}
+                                    disabled={!email || !password || isPasswordTooShort}
                                     onClick={handleNext}
                                     sx={{ marginBottom: "10px" }}
                                 >
