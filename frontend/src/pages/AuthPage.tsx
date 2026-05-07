@@ -77,6 +77,7 @@ const LoginPage = () => {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [showPassword, setShowPassword] = React.useState(false);
+    const [authErr, setAuthErr] = React.useState(false);
 
     const { setUser } = useAuth();
     const navigate = useNavigate();
@@ -94,7 +95,7 @@ const LoginPage = () => {
             navigate("/curse/1/lesson/1/section/1");
         } catch (err) {
             console.error("Ошибка при входе:", err);
-            alert("Неверный email или пароль");
+            setAuthErr(true);
         }
     };
 
@@ -124,7 +125,11 @@ const LoginPage = () => {
                         placeholder="Email"
                         variant="outlined"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)} />
+                        error={authErr}
+                        onChange={(e) => {
+                            setEmail(e.target.value);
+                            setAuthErr(false);
+                        }} />
                 </div>
                 <div style={{ marginBottom: "50px" }}>
                     <Typography variant="text2"
@@ -139,7 +144,16 @@ const LoginPage = () => {
                         variant="outlined"
                         type={showPassword ? "text" : "password"}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                            setPassword(e.target.value);
+                            setAuthErr(false);
+                        }}
+                        error={authErr}
+                        helperText={
+                            authErr
+                                ? "Неверный логин или пароль"
+                                : ""
+                        }
                         InputProps={{
                             endAdornment: (
                                 <InputAdornment position="end">
@@ -160,14 +174,15 @@ const LoginPage = () => {
                         }}
                     />
                 </div>
-                <SubmitButton disabled={!email || !password} onClick={handleLogin} sx = {{marginBottom: "10px"}}>Войти</SubmitButton>
-                <Typography variant = "text1" sx ={{textAlign: "center", color: theme.palette.primaryScale[100], }}>
+                <SubmitButton disabled={!email || !password} onClick={handleLogin} sx={{ marginBottom: "10px" }}>Войти</SubmitButton>
+                <Typography variant="text1" sx={{ textAlign: "center", color: theme.palette.primaryScale[100], }}>
                     У вас еще нет аккаунта?{" "}
-                    <Link 
-                    sx ={{color: theme.palette.primaryScale[300],
-                     fontWeight: "500",
-                     "&:hover" : {color: theme.palette.primaryScale[300]}
-                      }} href="/registration" underline="hover">
+                    <Link
+                        sx={{
+                            color: theme.palette.primaryScale[300],
+                            fontWeight: "500",
+                            "&:hover": { color: theme.palette.primaryScale[300] }
+                        }} href="/registration" underline="hover">
                         Зарегистрируйтесь сейчас
                     </Link>
                 </Typography>
