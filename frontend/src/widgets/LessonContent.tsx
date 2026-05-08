@@ -19,9 +19,6 @@ const LessonContent: React.FC<LessonContentProps> = ({ sections }) => {
 
   return (
     <>
-      <Tabs
-        lesson={Number(lessonId)}
-      />
       <Content section={activeSection} />
     </>
   );

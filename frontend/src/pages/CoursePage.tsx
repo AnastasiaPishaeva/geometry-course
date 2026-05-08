@@ -29,6 +29,7 @@ const ContentPage = () => {
     queryKey: ["sections", lessonId], //секции конкретного урока
     queryFn: fetchSection,
   });
+  
 
   if (!sections) return <div>Нет информации...</div>;
   if (isLoading) return <div>Загрузка...</div>;

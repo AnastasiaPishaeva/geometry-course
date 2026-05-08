@@ -21,7 +21,7 @@ export const AppRoutes = () => {
     }}>
       {(currentPath === "course" || currentPath === "personal-account") ? <BaseHeader /> : <HeaderForMainPage />}
       <Box sx={{ flexGrow: 1 }}>
-        <Routes>
+        <Routes>  
           <Route path="/" element={<Navigate to="/geomGame" />} />
           <Route path="/geomGame" element={<HomePage />} />
           <Route path="/course/:topicId" element={<CoursePage />}>
