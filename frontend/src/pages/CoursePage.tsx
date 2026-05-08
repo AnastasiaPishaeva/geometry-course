@@ -18,6 +18,7 @@ const ContentPage = () => {
   const fetchSection = async (): Promise<Section[]> => {
     try {
       const res = await api.get<Section[]>(`api/v1/lessons/${lessonId}/sections`);
+      console.log(sections)
       return res.data;
     } catch (error) {
       console.error("Ошибка загрузки секций", error);

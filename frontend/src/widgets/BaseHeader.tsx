@@ -63,7 +63,7 @@ const Header = () => {
         </Box>
         <Box >
           <StyledNav>
-            <StyledLink to="/home" isActive={currentPath === "course"}> Курс </StyledLink>
+            <StyledLink to="/course/1/lesson/4/section/1" isActive={currentPath === "course"}> Курс </StyledLink>
             <StyledLink to="/personal-account" isActive={currentPath === "personal-account"} > Личный кабинет </StyledLink>
           </StyledNav>
         </Box>

@@ -1,4 +1,4 @@
-import { Route } from 'react-router-dom';
+import { Route, useLocation } from 'react-router-dom';
 import HomePage from "../pages/HomePage.tsx";
 import { Routes } from "react-router-dom";
 import CoursePage from "../pages/CoursePage.tsx";
@@ -12,6 +12,7 @@ import PersonalAccount from '../pages/PersonalAccountPage.tsx';
 
 
 export const AppRoutes = () => {
+  const location = useLocation();
   const currentPath = location.pathname.split("/")[1] || "";
   return (
     <Box sx={{

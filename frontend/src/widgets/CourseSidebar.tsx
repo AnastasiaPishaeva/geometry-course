@@ -118,7 +118,7 @@ const SidebarMenu = () => {
                             onClick={() => {
                               {
                                 navigate(`/course/${topic.topic_id}/lesson/${lesson.lesson_id}/section/1`),
-                                console.log(openTopics)
+                                  console.log(openTopics)
                               }
                             }}
                             selected={isActive}
@@ -128,7 +128,14 @@ const SidebarMenu = () => {
                                 backgroundColor: theme.palette.primaryScale[800]
                               },
                               backgroundColor: "inherit",
-                              "&.Mui-selected": { backgroundColor: theme.palette.primaryScale[700] },
+                              "&.Mui-selected": {
+                                backgroundColor: theme.palette.primaryScale[700],
+
+                                "&:hover": {
+                                  backgroundColor: "#8fa6f7",
+                                },
+                              },
+
                             }}>
                             <Typography variant="h5"> {lesson.title} </Typography>
                           </ListItemButton>
