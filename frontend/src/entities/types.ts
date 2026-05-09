@@ -25,3 +25,8 @@ export type SectionProgressInfo = {
   type: "theory" | "game";
   order_number: number;
 }
+
+export type Stars = {
+  user_id: number;
+  total_stars: number;
+}
