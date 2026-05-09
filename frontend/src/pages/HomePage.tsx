@@ -55,7 +55,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/Tabs/mp1.svg"
+                        src="/src/assets/HomePage/mp1.svg"
                         sx={{
                             width: "100%",
                             height: "auto",
@@ -76,7 +76,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/Tabs/mp2.svg"
+                        src="/src/assets/HomePage/mp2.svg"
                         sx={{
                             width: "100%",
                             height: "auto",
@@ -97,7 +97,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/Tabs/mp3.svg"
+                        src="/src/assets/HomePage/mp3.svg"
                         sx={{
                             width: "100%",
                             height: "auto",
@@ -118,7 +118,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/Tabs/mp4.svg"
+                        src="/src/assets/HomePage/mp4.svg"
                         sx={{
                             width: "100%",
                             height: "auto",

@@ -27,7 +27,7 @@ const Banner = () => {
                 >
                     <Box
                         component="img"
-                        src="/src/assets/Tabs/logo.svg"
+                        src="/src/assets/HomePage/logo.svg"
                         sx={{
                             width: "258px",
                         }}
@@ -78,7 +78,7 @@ const Banner = () => {
                 </Box>
                 <Box
                     component="img"
-                    src="/src/assets/Tabs/pattern1.svg"
+                    src="/src/assets/HomePage/pattern1.svg"
                     sx={{
                         position: "absolute",
                         top: 0,
@@ -89,7 +89,7 @@ const Banner = () => {
 
                 <Box
                     component="img"
-                    src="/src/assets/Tabs/pattern2.svg"
+                    src="/src/assets/HomePage/pattern2.svg"
                     sx={{
                         position: "absolute",
                         bottom: 0,
