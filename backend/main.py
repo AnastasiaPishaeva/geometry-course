@@ -100,7 +100,11 @@ def ensure_auth_tables() -> None:
 
 ensure_auth_tables()
 
-@api.post("/auth/register")
+@api.post(
+    "/auth/register",
+    summary="Регистрация пользователя",
+    description="Необходимо ввести email, пароль, имя и фамилию"
+)
 def register(payload: RegistrationPayload):
     email = normalize_email(payload.email)
     password_hash = hash_password(payload.password)
@@ -130,8 +134,11 @@ def register(payload: RegistrationPayload):
 
     return {"user": dict(created_user._mapping)}
 
-
-@api.post("/auth/login")
+@api.post(
+    "/auth/login",
+    summary="Вход пользователя",
+    description="Необходимо ввести email и пароль"
+)
 def login(payload: LoginPayload):
     email = normalize_email(payload.email)
 
@@ -155,7 +162,11 @@ def login(payload: LoginPayload):
 
     return {"user": user}
 
-@api.get("/users/{user_id}")
+@api.get(
+    "/users/{user_id}",
+    summary="Получение пользователя по ID",
+    description="Возвращает id, email, имя, фамилию и дату создания"
+)
 def get_user(user_id: int):
     with engine.connect() as connection:
         result = connection.execute(
@@ -173,7 +184,11 @@ def get_user(user_id: int):
     return dict(result._mapping)
 
 
-@api.put("/users/{user_id}")
+@api.put(
+    "/users/{user_id}",
+    summary="Редактирование пользователя",
+    description="Необходимо ввести id пользователя и новые параметры (email, first_name, last_name)"
+)
 def update_user(user_id: int, payload: UpdateUserPayload):
     update_fields = {}
 
@@ -222,7 +237,11 @@ def update_user(user_id: int, payload: UpdateUserPayload):
 
     return dict(updated._mapping)
 
-@api.get("/course")
+@api.get(
+    "/course",
+    summary="Получение курса",
+    description="Выдаются заголовок и описание"
+)
 def get_course():
     with engine.connect() as connection:
         result = connection.execute(
@@ -235,7 +254,15 @@ def get_course():
     return dict(result._mapping)
 
 
-@api.get("/courses/{course_id}/topics-lessons")
+@api.get(
+    "/courses/{course_id}/topics-lessons",
+    summary="Получение тем и уроков",
+    description=(
+        "Возвращает по id курса топики курса (введение, треугольники, многоугольники) "
+        "и уроки внутри этих топиков. Для топиков возвращаются id, заголовок, порядок и массив уроков. "
+        "Для уроков возвращаются id урока, заголовок и порядок."
+    )
+)
 def get_topics_with_lessons(course_id: int):
     with engine.connect() as connection:
         topics_result = connection.execute(
@@ -269,7 +296,14 @@ def get_topics_with_lessons(course_id: int):
     return topics
 
 
-@api.get("/lessons/{lesson_id}/sections")
+@api.get(
+    "/lessons/{lesson_id}/sections",
+    summary="Получение секций по уроку",
+    description=(
+        "После ввода id урока возвращает секции этого урока: "
+        "id секции, заголовок, текст секции и порядок."
+    )
+)
 def get_sections_for_lesson(lesson_id: int):
     with engine.connect() as connection:
         result = connection.execute(
@@ -285,13 +319,24 @@ def get_sections_for_lesson(lesson_id: int):
     return [dict(r._mapping) for r in result]
 
 
-@api.get("/users/{user_id}/lessons/{lesson_id}/sections-status")
+@api.get(
+    "/users/{user_id}/lessons/{lesson_id}/sections-status",
+    summary="Получение всей информации о секциях у пользователя",
+    description=(
+        "Необходимо ввести id пользователя и id урока. "
+        "Возвращает: id секции, id урока, описание, тип и статус выполнения (completed)."
+    )
+)
 def get_sections_status(user_id: int, lesson_id: int):
     with engine.connect() as connection:
         result = connection.execute(
             text("""
                 SELECT 
                     s.section_id,
+                    s.lesson_id,
+                    s.title,
+                    s.order_number,
+                    s.type,
                     COALESCE(up.completed, FALSE) AS completed
                 FROM sections s
                 LEFT JOIN user_progress up
@@ -305,8 +350,37 @@ def get_sections_status(user_id: int, lesson_id: int):
 
     return [dict(r._mapping) for r in result]
 
-@api.post("/users/{user_id}/sections/{section_id}/status")
-def set_section_completed(user_id: int, section_id: int, completed: bool = Body(True, embed=True)):
+@api.get(
+    "/users/{user_id}/stars",
+    summary="Получение звёзд пользователя",
+    description="Получение общего количества звёзд пользователя по user_id"
+)
+def get_user_stars(user_id: int):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT COALESCE(SUM(stars_earned), 0) AS total_stars
+                FROM user_progress
+                WHERE user_id = :user_id
+            """),
+            {"user_id": user_id}
+        ).fetchone()
+
+    return {
+        "user_id": user_id,
+        "total_stars": result.total_stars
+    }
+
+@api.post(
+    "/users/{user_id}/sections/{section_id}/status",
+    summary="Добавление статуса секции",
+    description="По user_id и section_id можно добавить или изменить статус выполнения секции"
+)
+def set_section_completed(
+    user_id: int,
+    section_id: int,
+    completed: bool = Body(True, embed=True)
+):
     with engine.begin() as connection:
         exists = connection.execute(
             text("SELECT 1 FROM sections WHERE section_id = :section_id"),
@@ -346,7 +420,11 @@ def set_section_completed(user_id: int, section_id: int, completed: bool = Body(
     return {"section_id": section_id, "completed": completed}
 
 
-@api.post("/users/{user_id}/sections/{section_id}/progress")
+@api.post(
+    "/users/{user_id}/sections/{section_id}/progress",
+    summary="Добавление звёзд",
+    description="Добавление звёзд для секции по user_id и section_id"
+)
 def add_progress(user_id: int, section_id: int, payload: ProgressPayload):
     with engine.begin() as connection:
         existing = connection.execute(
@@ -365,7 +443,11 @@ def add_progress(user_id: int, section_id: int, payload: ProgressPayload):
                     SET completed = TRUE, stars_earned = :stars
                     WHERE user_id = :user_id AND section_id = :section_id
                 """),
-                {"stars": payload.stars_earned, "user_id": user_id, "section_id": section_id}
+                {
+                    "stars": payload.stars_earned,
+                    "user_id": user_id,
+                    "section_id": section_id
+                }
             )
         else:
             connection.execute(
@@ -373,7 +455,11 @@ def add_progress(user_id: int, section_id: int, payload: ProgressPayload):
                     INSERT INTO user_progress (user_id, section_id, completed, stars_earned)
                     VALUES (:user_id, :section_id, TRUE, :stars)
                 """),
-                {"user_id": user_id, "section_id": section_id, "stars": payload.stars_earned}
+                {
+                    "user_id": user_id,
+                    "section_id": section_id,
+                    "stars": payload.stars_earned
+                }
             )
 
     return {"section_id": section_id, "stars": payload.stars_earned}
