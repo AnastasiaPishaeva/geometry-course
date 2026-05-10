@@ -43,9 +43,7 @@ const Header = () => {
   const theme = useTheme();
   const location = useLocation();
   const currentPath = location.pathname.split("/")[1] || "";
-  const { sectionId } = useParams();
-  const isLogin = sectionId != null;
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const fetchProgress = async (): Promise<Stars> => {
     try {
       const res = await api.get<Stars>(`api/v1/users/${user?.user_id}/stars`);

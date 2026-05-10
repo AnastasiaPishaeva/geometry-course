@@ -9,6 +9,7 @@ import {useNavigate, useParams} from "react-router-dom";
 
 import type { Lesson, SectionProgressInfo } from "../entities/types";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../app/providers/AuthProvider";
 
 interface TabsProps {
   lesson: number;
@@ -27,11 +28,12 @@ const images = {
 
 const Tabs: React.FC<TabsProps> = ({ lesson}) => {
   const theme = useTheme();
+  const {user} = useAuth();
   const { topicId, lessonId } = useParams();
   const navigate = useNavigate();
   const fetchSectionProgress = async (): Promise<SectionProgressInfo[]> => {
     try {
-      const res = await api.get<SectionProgressInfo[]>(`api/v1/users/1/lessons/${lesson}/sections-status`);
+      const res = await api.get<SectionProgressInfo[]>(`api/v1/users/${user?.user_id}/lessons/${lesson}/sections-status`);
       return res.data;
     } catch (error) {
       console.error("Ошибка загрузки прогресса по секциям", error);
@@ -69,7 +71,7 @@ const Tabs: React.FC<TabsProps> = ({ lesson}) => {
             key={section.section_id}
             src={imageSrc}
             alt={section.title}
-            onClick={() => {navigate(`/course/${topicId}/lesson/${lessonId}/section/${section.section_id}`)}}
+            onClick={() => {navigate(`/course/${topicId}/lesson/${lessonId}/section/${section.order_number}`)}}
             style={{ cursor: "pointer" }}
           />
         );
