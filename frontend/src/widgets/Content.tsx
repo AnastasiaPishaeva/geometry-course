@@ -8,7 +8,7 @@ interface ContentProps {
 const Content: React.FC<ContentProps> = ({ section }) => {
   if (section === undefined) return <div>В уроке еще нет секций, но должна быть хоть 1!!</div>
   return (
-    <>
+    <div style={{marginBottom: "60px"}}>
       <Typography variant="h2" 
       sx = {{
         marginBottom: "20px"
@@ -21,7 +21,7 @@ const Content: React.FC<ContentProps> = ({ section }) => {
         }}>
         {section.theory_text}
       </Typography>
-    </>
+    </div>
   );
 };
 export default Content;

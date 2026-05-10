@@ -6,12 +6,13 @@ import { Grid, } from "@mui/material";
 import api from "../api/api";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@mui/material/styles";
+import { useEffect, useRef } from "react";
 
 const ContentPage = () => {
   const theme = useTheme();
-  const { lessonId } = useParams();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const { lessonId, sectionId } = useParams();
   if (!lessonId) {
-    // const sections = {"section_id":0,"title":"Что такое треугольник","theory_text":"Треугольник — это фигура с тремя сторонами...","order_number":1};
     return <div>Тема не найдена</div>
   }
 
@@ -23,7 +24,7 @@ const ContentPage = () => {
     } catch (error) {
       console.error("Ошибка загрузки секций", error);
       throw new Error("Ошибка загрузки тем");
-  }
+    }
   };
 
   const { data: sections, isLoading, error } = useQuery({
@@ -31,6 +32,13 @@ const ContentPage = () => {
     queryFn: fetchSection,
   });
   
+  useEffect(() => {
+    contentRef.current?.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [sectionId]);
+
 
   if (!sections) return <div>Нет информации...</div>;
   if (isLoading) return <div>Загрузка...</div>;
@@ -41,8 +49,8 @@ const ContentPage = () => {
 
   return (
     <Grid container sx={{ height: "100%", overflow: "hidden" }}>
-      <Grid size={{xs: 3}} sx={{
-        top: "1px", 
+      <Grid size={{ xs: 3 }} sx={{
+        top: "1px",
         overflowY: "auto",
         height: "calc(100vh - 85px)",
         boxShadow: 2,
@@ -50,17 +58,17 @@ const ContentPage = () => {
         <SidebarMenu />
       </Grid>
 
-      <Grid size={{xs: 9}}
-          component="main" sx={{
-            flexGrow: 1,
-            padding: theme.spacing(4, 32),
-            overflowY: "auto",
-            height: "calc(100vh - 85px)", 
-            '&::-webkit-scrollbar': {
-            display: 'none', 
+      <Grid ref={contentRef} size={{ xs: 9 }}
+        component="main" sx={{
+          flexGrow: 1,
+          padding: theme.spacing(4, 32),
+          overflowY: "auto",
+          height: "calc(100vh - 85px)",
+          '&::-webkit-scrollbar': {
+            display: 'none',
           },
-          }}>
-          <LessonContent sections = {sections} />
+        }}>
+        <LessonContent sections={sections} />
       </Grid>
     </Grid>
   );
