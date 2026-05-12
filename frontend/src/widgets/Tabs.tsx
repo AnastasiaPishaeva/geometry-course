@@ -5,7 +5,7 @@ import TheoryUnfinishedButton from "../assets/Tabs/TheoryUnfinished.png";
 import TheoryFinishedButton from "../assets/Tabs/TheoryFinished.png";
 import GameUnfinishedButton from "../assets/Tabs/GameUnfinished.png";
 import GameFinishedButton from "../assets/Tabs/GameFinished.png";
-import {useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import type { Lesson, SectionProgressInfo } from "../entities/types";
 import { useQuery } from "@tanstack/react-query";
@@ -26,9 +26,9 @@ const images = {
   },
 };
 
-const Tabs: React.FC<TabsProps> = ({ lesson}) => {
+const Tabs: React.FC<TabsProps> = ({ lesson }) => {
   const theme = useTheme();
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { topicId, lessonId } = useParams();
   const navigate = useNavigate();
   const fetchSectionProgress = async (): Promise<SectionProgressInfo[]> => {
@@ -36,9 +36,8 @@ const Tabs: React.FC<TabsProps> = ({ lesson}) => {
       const res = await api.get<SectionProgressInfo[]>(`api/v1/users/${user?.user_id}/lessons/${lesson}/sections-status`);
       return res.data;
     } catch (error) {
-      console.error("Ошибка загрузки прогресса по секциям", error);
       throw new Error("Ошибка загрузки прогресса по секциям");
-  }
+    }
   };
 
   const { data: progress, isLoading, error } = useQuery({
@@ -46,8 +45,8 @@ const Tabs: React.FC<TabsProps> = ({ lesson}) => {
     queryFn: fetchSectionProgress,
   });
 
+  if (isLoading) return <div></div>;
   if (!progress) return <div>Ошибка загрузки прогресса по секциям</div>;
-  if (isLoading) return <div>Загузка...</div>;
   if (error) return <div>Ошибка загрузки прогресса по секциям..</div>
 
   return (
@@ -71,7 +70,7 @@ const Tabs: React.FC<TabsProps> = ({ lesson}) => {
             key={section.section_id}
             src={imageSrc}
             alt={section.title}
-            onClick={() => {navigate(`/course/${topicId}/lesson/${lessonId}/section/${section.order_number}`)}}
+            onClick={() => { navigate(`/course/${topicId}/lesson/${lessonId}/section/${section.order_number}`) }}
             style={{ cursor: "pointer" }}
           />
         );

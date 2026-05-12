@@ -8,7 +8,7 @@ import api from "../api/api";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../app/providers/AuthProvider";
 import start_picture from "../assets/star.svg";
-import type {Stars} from "../entities/types"
+import type { Stars } from "../entities/types"
 
 const StyledHeader = styled("header")(({ theme }) => ({
   backgroundColor: theme.palette.primaryScale[400],
@@ -49,16 +49,17 @@ const Header = () => {
       const res = await api.get<Stars>(`api/v1/users/${user?.user_id}/stars`);
       return res.data;
     } catch (error) {
-      console.error("Ошибка загрузки секций", error);
-      throw new Error("Ошибка загрузки тем");
+      console.error("Ошибка загрузки количества звезд", error);
+      throw new Error("Ошибка загрузки количества звезд");
     }
   };
 
   const { data: stars, isLoading, error } = useQuery({
-    queryKey: ["stars"],
+    queryKey: ["stars", user?.user_id],
     queryFn: fetchProgress,
+    enabled: !!user?.user_id,
   });
-
+  
   return (
     <StyledHeader>
       <Grid
@@ -81,7 +82,7 @@ const Header = () => {
             <img src={logo} alt="illustration" />
           </Link>
         </Box>
-        <Box sx={{flexGrow: 1}}>
+        <Box sx={{ flexGrow: 1 }}>
           <StyledNav>
             <StyledLink to="/course/1/lesson/4/section/1" isActive={currentPath === "course"}> Курс </StyledLink>
             <StyledLink to="/personal-account" isActive={currentPath === "personal-account"} > Личный кабинет </StyledLink>
@@ -101,7 +102,7 @@ const Header = () => {
               width: "29px"
             }}>
           </img>
-          <Typography variant="h4" sx={{color: "white"}}>
+          <Typography variant="h4" sx={{ color: "white" }}>
             {stars?.total_stars}
           </Typography>
         </Box>

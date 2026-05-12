@@ -1,17 +1,16 @@
 import React from "react";
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Section } from "../entities/types";
-import { useAuth } from "../app/providers/AuthProvider";
 import { Box, Button, Typography } from "@mui/material";
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 interface ButtonProps {
     sections: Section[];
 }
 
 const ButtonToMove: React.FC<ButtonProps> = ({ sections }) => {
-    const theme = useTheme();
-    const { user } = useAuth();
     const { topicId, lessonId, sectionId } = useParams();
     const navigate = useNavigate();
 
@@ -20,7 +19,7 @@ const ButtonToMove: React.FC<ButtonProps> = ({ sections }) => {
         color: "white",
         borderRadius: "30px",
         width: "185px",
-        padding: theme.spacing(3, 0),
+        padding: theme.spacing(3, 3),
         "&:focus": {
             outline: "none",
         },
@@ -38,7 +37,8 @@ const ButtonToMove: React.FC<ButtonProps> = ({ sections }) => {
                 <ButtonToMove
                     disabled={sectionId === "1"}
                     onClick={() => { navigate(`/course/${topicId}/lesson/${lessonId}/section/${Number(sectionId) - 1}`) }}>
-                    <Typography variant="text1">
+                    <ChevronLeftIcon sx={{position: "absolute", left: 10}}/>
+                    <Typography variant="text1" >
                         Назад
                     </Typography>
                 </ButtonToMove>
@@ -49,6 +49,7 @@ const ButtonToMove: React.FC<ButtonProps> = ({ sections }) => {
                     <Typography variant="text1">
                         Вперед
                     </Typography>
+                    <ChevronRightIcon sx={{position: "absolute", right: 10}}/>
                 </ButtonToMove>
             </Box>
         </Box>

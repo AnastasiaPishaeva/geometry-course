@@ -117,8 +117,7 @@ const SidebarMenu = () => {
                             key={lesIndex}
                             onClick={() => {
                               {
-                                navigate(`/course/${topic.topic_id}/lesson/${lesson.lesson_id}/section/1`),
-                                  console.log(openTopics)
+                                navigate(`/course/${topic.topic_id}/lesson/${lesson.lesson_id}/section/1`)
                               }
                             }}
                             selected={isActive}
