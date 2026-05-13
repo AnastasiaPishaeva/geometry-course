@@ -81,6 +81,7 @@ const RegistrationPage = () => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [step, setStep] = React.useState(1);
     const [direction, setDirection] = React.useState(1);
+    const [emailError, setEmailError] = React.useState("");
     const navigate = useNavigate();
     const isPasswordTooShort = password.length > 0 && password.length < 6;
 
@@ -102,6 +103,13 @@ const RegistrationPage = () => {
             navigate("/authorization");
         } catch (err: any) {
             console.log(err.response.data);
+            if (err.response.status === 409) {
+                setDirection(-1);
+                setStep(1);
+                setEmailError("Пользователь с таким email уже существует");
+                return;
+            }
+
             alert("Ошибка регистрации");
         }
     };
@@ -167,7 +175,12 @@ const RegistrationPage = () => {
                                         placeholder="Email"
                                         variant="outlined"
                                         value={email}
-                                        onChange={(e) => setEmail(e.target.value)} />
+                                        onChange={(e) => {
+                                            setEmail(e.target.value);
+                                            setEmailError("");
+                                        }}
+                                        error={Boolean(emailError)}
+                                        helperText={emailError} />
                                 </div>
                                 <div style={{ marginBottom: "50px" }}>
                                     <Typography variant="text2"
