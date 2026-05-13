@@ -54,7 +54,7 @@ const Header = () => {
     }
   };
 
-  const { data: stars, isLoading, error } = useQuery({
+  const { data: stars } = useQuery({
     queryKey: ["stars", user?.user_id],
     queryFn: fetchProgress,
     enabled: !!user?.user_id,

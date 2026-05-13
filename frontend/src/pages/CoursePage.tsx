@@ -73,6 +73,10 @@ const ContentPage = () => {
             queryKey: ["sections_progress", lessonId],
           });
 
+          queryClient.invalidateQueries({
+            queryKey: ["stars", user?.user_id],
+          });
+
         } catch (err) {
           console.error("Ошибка обновления прогресса", err);
         }
