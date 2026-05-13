@@ -16,9 +16,7 @@ const ContentPage = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { lessonId, sectionId } = useParams();
-  const [completed, setCompleted] = useState(false);
   const queryClient = useQueryClient();
-  const completedRef = useRef(false);
 
   if (!lessonId) {
     return <div>Тема не найдена</div>

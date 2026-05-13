@@ -77,9 +77,6 @@ const SidebarMenu = () => {
       >
         <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
           {topics?.map((topic, index) => {
-            const hasLessons = topic.lessons.length > 0
-            const isTopicActive = topic.topic_id === activeTopicIndex;
-            if (hasLessons) {
               return (
                 <Accordion
                   key={index}
@@ -145,28 +142,28 @@ const SidebarMenu = () => {
                   </AccordionDetails>
                 </Accordion>
               )
-            }
-            else {
-              return (
-                <ListItemButton
-                  key={index}
-                  onClick={() => navigate(`/course/${topic.topic_id}`)}
-                  selected={isTopicActive}
-                  sx={{
-                    borderRadius: theme.shape.borderRadius,
-                    padding: theme.spacing(3, 6),
-                    "&:hover": {
-                      backgroundColor: theme.palette.primaryScale[800]
-                    },
-                    "&.Mui-selected, &.Mui-selected:hover": { backgroundColor: theme.palette.primaryScale[700] },
-                  }}
-                >
-                  <Typography variant="h4" >
-                    {topic.order_number}. {topic.title}
-                  </Typography>
-                </ListItemButton>
-              )
-            }
+           
+            // else {
+            //   return (
+            //     <ListItemButton
+            //       key={index}
+            //       onClick={() => navigate(`/course/${topic.topic_id}`)}
+            //       selected={isTopicActive}
+            //       sx={{
+            //         borderRadius: theme.shape.borderRadius,
+            //         padding: theme.spacing(3, 6),
+            //         "&:hover": {
+            //           backgroundColor: theme.palette.primaryScale[800]
+            //         },
+            //         "&.Mui-selected, &.Mui-selected:hover": { backgroundColor: theme.palette.primaryScale[700] },
+            //       }}
+            //     >
+            //       <Typography variant="h4" >
+            //         {topic.order_number}. {topic.title}
+            //       </Typography>
+            //     </ListItemButton>
+            //   )
+            // }
           })}
         </Grid>
       </StyledDrawer>

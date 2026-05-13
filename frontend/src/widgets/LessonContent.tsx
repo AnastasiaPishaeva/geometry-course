@@ -19,7 +19,7 @@ const LessonContent: React.FC<LessonContentProps> = ({ sections, bottomRef }) =>
   return (
     <>
       <Tabs
-        lesson={Number(lessonId)}
+        lesson={Number(lessonId)} activeSection={Number(activeSection?.order_number)}
       />
       <Content section={activeSection} bottomRef={bottomRef}/>
       {sections.length > 1 && (

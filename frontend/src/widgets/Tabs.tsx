@@ -7,12 +7,13 @@ import GameUnfinishedButton from "../assets/Tabs/GameUnfinished.png";
 import GameFinishedButton from "../assets/Tabs/GameFinished.png";
 import { useNavigate, useParams } from "react-router-dom";
 
-import type { Lesson, SectionProgressInfo } from "../entities/types";
+import type { SectionProgressInfo } from "../entities/types";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../app/providers/AuthProvider";
 
 interface TabsProps {
   lesson: number;
+  activeSection: number;
 }
 
 const images = {
@@ -26,7 +27,7 @@ const images = {
   },
 };
 
-const Tabs: React.FC<TabsProps> = ({ lesson }) => {
+const Tabs: React.FC<TabsProps> = ({ lesson, activeSection }) => {
   const theme = useTheme();
   const { user } = useAuth();
   const { topicId, lessonId } = useParams();
@@ -55,9 +56,10 @@ const Tabs: React.FC<TabsProps> = ({ lesson }) => {
         display: "flex",
         gap: theme.spacing(2),
         marginBottom: theme.spacing(4),
-        height: "32px",
+        height: "45px",
         width: "auto",
-        marginLeft: "auto"
+        marginLeft: "auto",
+        alignItems: "center"
       }}
     >
       {progress.map((section) => {
@@ -71,7 +73,7 @@ const Tabs: React.FC<TabsProps> = ({ lesson }) => {
             src={imageSrc}
             alt={section.title}
             onClick={() => { navigate(`/course/${topicId}/lesson/${lessonId}/section/${section.order_number}`) }}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer",  height: Number(section.order_number) === activeSection ? "100%" : "80%"}}
           />
         );
       })}
