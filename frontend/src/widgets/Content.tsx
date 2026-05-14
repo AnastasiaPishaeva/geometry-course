@@ -2,8 +2,9 @@ import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import type { Section } from "../entities/types";
 import { Box, Typography } from "@mui/material";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "../app/providers/AuthProvider";
+import api from "../api/api";
 
 interface ContentProps {
   section: Section | undefined;
@@ -13,20 +14,35 @@ interface ContentProps {
 const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { user } = useAuth();
-  const sendToUnity = () => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+  const sectionId = section?.section_id;
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type !== "STARS_CHANGED") return;
 
-    const payload = {
-      userId: Number(user?.user_id),
-      sectionId: Number(section?.section_id),
+      const stars = event.data.stars;
+
+      console.log("Unity stars:", stars);
+
+      try {
+        await api.post(
+          `/api/v1/users/${user?.user_id}/sections/${sectionId}/progress`,
+          {
+            stars_earned: stars,
+          }
+        );
+
+        console.log("Звезды сохранены");
+      } catch (err) {
+        console.error("Ошибка сохранения звезд", err);
+      }
     };
 
-    iframe.contentWindow?.postMessage(
-      { type: "INIT", payload },
-      "*"
-    );
-  };
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [user, sectionId]);
 
   if (section === undefined) return <div>В уроке еще нет секций, но должна быть хоть 1!!</div>
 
@@ -50,7 +66,6 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
           <iframe
             ref={iframeRef}
             src="/game/index.html"
-            onLoad={sendToUnity}
             style={{
               width: "100%",
               height: "100%",
