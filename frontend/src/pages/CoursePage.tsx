@@ -114,6 +114,7 @@ const ContentPage = () => {
           flexGrow: 1,
           padding: theme.spacing(4, 32),
           overflowY: "auto",
+          boxSizing: "border-box",
           height: "calc(100vh - 85px)",
           '&::-webkit-scrollbar': {
             display: 'none',
