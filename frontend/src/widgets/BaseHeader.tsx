@@ -78,9 +78,7 @@ const Header = () => {
             height: "auto",
           },
         }}>
-          <Link to="/geomGame">
-            <img src={logo} alt="illustration" />
-          </Link>
+          <img src={logo} alt="illustration" />
         </Box>
         <Box sx={{ flexGrow: 1 }}>
           <StyledNav>

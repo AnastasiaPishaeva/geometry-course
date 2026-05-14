@@ -3,15 +3,15 @@ import { Grid, Typography, Box } from "@mui/material";
 import { styled } from '@mui/system';
 import { useTheme } from "@mui/material/styles";
 import logo from '../assets/logo.png'
-import {useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const StyledHeader = styled("header")(({ theme }) => ({
   backgroundColor: theme.palette.primaryScale[400],
   padding: theme.spacing(7, 6),
   width: "100%",
-  display: "flex", 
+  display: "flex",
   marginBottom: theme.spacing(0.25),
-  }));
+}));
 
 const StyledNav = styled("nav")({
   display: "flex",
@@ -29,7 +29,7 @@ const StyledLink = styled(Link, {
   fontWeight: isActive ? "700" : "400",
 
   "&:hover": {
-    textDecoration: "none",       
+    textDecoration: "none",
     color: theme.palette.background.default,
   },
 }));
@@ -38,7 +38,8 @@ const Header = () => {
   const theme = useTheme();
   const location = useLocation();
   const currentPath = location.pathname.split("/")[1] || "";
-  const {sectionId} = useParams();
+  const { sectionId } = useParams();
+  const navigate = useNavigate();
   const isLogin = sectionId != null;
   return (
     <StyledHeader>
@@ -51,15 +52,21 @@ const Header = () => {
           alignItems: "center",
         }}
       >
-        <Box sx={{ maxWidth: "154px", marginRight : "55px",
-        "& img": {
-                  width: "100%", 
-                  height: "auto",
-                  },
-         }}>
-          <Link to="/geomGame">
+        <Box sx={{
+          maxWidth: "154px", marginRight: "55px",
+          "& img": {
+            width: "100%",
+            height: "auto",
+          },
+        }}>
+          {(currentPath === "registration" ||
+            currentPath === "authorization") ? (
+            <Link to="/geomGame">
+              <img src={logo} alt="illustration" />
+            </Link>
+          ) : (
             <img src={logo} alt="illustration" />
-          </Link>
+          )}
         </Box>
       </Grid>
     </StyledHeader>

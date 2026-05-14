@@ -1,6 +1,6 @@
-﻿import {Grid, Box, Typography, Button, useMediaQuery} from "@mui/material";
+﻿import { Grid, Box, Typography, Button, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 const Banner = () => {
@@ -64,6 +64,13 @@ const Banner = () => {
                             background: theme.palette.primaryScale[300],
                             borderRadius: "20px",
                             mt: "28px",
+                            outline: "none",
+                            "&:focus": {
+                                outline: "none",
+                            },
+                            "&.Mui-focusVisible": {
+                                outline: "none",
+                            },
                         }}
                     >
                         <Typography
