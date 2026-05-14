@@ -1,16 +1,19 @@
 import React from "react";
 import { useTheme } from "@mui/material/styles";
-
+import api from "../api/api";
 import TheoryUnfinishedButton from "../assets/Tabs/TheoryUnfinished.png";
 import TheoryFinishedButton from "../assets/Tabs/TheoryFinished.png";
 import GameUnfinishedButton from "../assets/Tabs/GameUnfinished.png";
 import GameFinishedButton from "../assets/Tabs/GameFinished.png";
+import { useNavigate, useParams } from "react-router-dom";
 
-import type { Lesson } from "../entities/types";
+import type { SectionProgressInfo } from "../entities/types";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../app/providers/AuthProvider";
 
 interface TabsProps {
-  lessons: Lesson[];
-  onTabChange: (index: number) => void;
+  lesson: number;
+  activeSection: number;
 }
 
 const images = {
@@ -24,32 +27,53 @@ const images = {
   },
 };
 
-const Tabs: React.FC<TabsProps> = ({ lessons, onTabChange }) => {
+const Tabs: React.FC<TabsProps> = ({ lesson, activeSection }) => {
   const theme = useTheme();
+  const { user } = useAuth();
+  const { topicId, lessonId } = useParams();
+  const navigate = useNavigate();
+  const fetchSectionProgress = async (): Promise<SectionProgressInfo[]> => {
+    try {
+      const res = await api.get<SectionProgressInfo[]>(`api/v1/users/${user?.user_id}/lessons/${lesson}/sections-status`);
+      return res.data;
+    } catch (error) {
+      throw new Error("Ошибка загрузки прогресса по секциям");
+    }
+  };
+
+  const { data: progress, isLoading, error } = useQuery({
+    queryKey: ["sections_progress", lesson],
+    queryFn: fetchSectionProgress,
+  });
+
+  if (isLoading) return <div></div>;
+  if (!progress) return <div>Ошибка загрузки прогресса по секциям</div>;
+  if (error) return <div>Ошибка загрузки прогресса по секциям..</div>
 
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "center",
         gap: theme.spacing(2),
         marginBottom: theme.spacing(4),
+        height: "45px",
+        width: "auto",
+        marginLeft: "auto",
+        alignItems: "center"
       }}
     >
-      {lessons.map((lesson, index) => {
-        const isLast = index === lessons.length - 1;
-        const type = isLast ? "game" : "theory";
-
+      {progress.map((section) => {
+        const type = section.type;
         const imageSrc =
-          images[type][lesson.isCompleted ? "finished" : "unfinished"];
+          images[type][section.completed ? "finished" : "unfinished"];
 
         return (
           <img
-            key={lesson.id}
+            key={section.section_id}
             src={imageSrc}
-            alt={lesson.title}
-            onClick={() => onTabChange(index)}
-            style={{ cursor: "pointer" }}
+            alt={section.title}
+            onClick={() => { navigate(`/course/${topicId}/lesson/${lessonId}/section/${section.order_number}`) }}
+            style={{ cursor: "pointer",  height: Number(section.order_number) === activeSection ? "100%" : "80%"}}
           />
         );
       })}

@@ -48,9 +48,9 @@ const QuestionItem = ({name, description}:QuestionItemProps)=> {
                     disableRipple
                 >
                     {expanded ? (
-                        <img src="/src/assets/Tabs/minus_button.svg" alt="minus" />
+                        <img src="/src/assets/HomePage/minus_button.svg" alt="minus" />
                     ) : (
-                        <img src="/src/assets/Tabs/plus_button.svg" alt="plus" />
+                        <img src="/src/assets/HomePage/plus_button.svg" alt="plus" />
                     )}
                 </IconButton>
                 </Grid>

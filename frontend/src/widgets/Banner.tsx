@@ -1,6 +1,6 @@
-﻿import {Grid, Box, Typography, Button, useMediaQuery} from "@mui/material";
+﻿import { Grid, Box, Typography, Button, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 const Banner = () => {
@@ -27,7 +27,7 @@ const Banner = () => {
                 >
                     <Box
                         component="img"
-                        src="/src/assets/Tabs/logo.svg"
+                        src="/src/assets/HomePage/logo.svg"
                         sx={{
                             width: "258px",
                         }}
@@ -57,13 +57,20 @@ const Banner = () => {
                         Образовательный онлайн-сервис, в котором геометрия изучается через игру. Вместо скучной теории — уровни, задания, игровые механики и наглядные примеры, которые помогают легко понять даже сложные темы.
                     </Typography>
                     <Button
-                        onClick={() => navigate("/course/1/lesson/1")}
+                        onClick={() => navigate("/authorization")}
                         sx={{
                             width: "282px",
                             height: "50px",
                             background: theme.palette.primaryScale[300],
                             borderRadius: "20px",
                             mt: "28px",
+                            outline: "none",
+                            "&:focus": {
+                                outline: "none",
+                            },
+                            "&.Mui-focusVisible": {
+                                outline: "none",
+                            },
                         }}
                     >
                         <Typography
@@ -78,7 +85,7 @@ const Banner = () => {
                 </Box>
                 <Box
                     component="img"
-                    src="/src/assets/Tabs/pattern1.svg"
+                    src="/src/assets/HomePage/pattern1.svg"
                     sx={{
                         position: "absolute",
                         top: 0,
@@ -89,7 +96,7 @@ const Banner = () => {
 
                 <Box
                     component="img"
-                    src="/src/assets/Tabs/pattern2.svg"
+                    src="/src/assets/HomePage/pattern2.svg"
                     sx={{
                         position: "absolute",
                         bottom: 0,

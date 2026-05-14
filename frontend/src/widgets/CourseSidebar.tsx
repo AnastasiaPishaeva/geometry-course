@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -7,26 +6,20 @@ import {
   List,
   ListItemButton,
   Grid,
-  Button,
-  useMediaQuery,
   Drawer,
-  IconButton
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MenuIcon from "@mui/icons-material/Menu";
 import { styled } from "@mui/system";
-import {useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
-import menuData from "../assets/menuData.json"
-
-const Content = styled(Typography)(({ theme }) => ({
-  color: theme.palette.grey[500],
-  paddingLeft: theme.spacing(2),
-  paddingTop: theme.spacing(2)
-}));
+import { useQuery } from "@tanstack/react-query";
+import type { Topic } from "../entities/types";
+import api from "../api/api";
+import { useState } from "react";
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   height: "100%",
+  color: theme.palette.primaryScale[900],
   "& .MuiDrawer-paper": {
     width: "75vw",
     position: "relative",
@@ -40,125 +33,138 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 
 const SidebarMenu = () => {
   const navigate = useNavigate();
-  const { sectionId, lessonId } = useParams();
-  const activeSectionId = Number(sectionId);
+  const { topicId, lessonId } = useParams();
+  const activeTopicIndex = Number(topicId);
   const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
-  const [open, setOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 900px)");
-
-  const toggleDrawer = (open: boolean) => {
-    setOpen(open);
-  };
-  const [openSection, setOpenSection] = useState<boolean[]>(
-    menuData.map(() => false)
+  const [openTopics, setOpenTopics] = useState<number[]>(
+    topicId ? [Number(topicId)] : []
   );
 
-  const toggleSection = (index: number) => {
-    setOpenSection((prevState) =>
-      prevState.map((isOpen, i) => (i === index ? !isOpen : isOpen))
+  const fetchTopics = async (): Promise<Topic[]> => {
+    try {
+      const res = await api.get<Topic[]>("api/v1/courses/1/topics-lessons");
+      return res.data;
+    } catch (error) {
+      console.error("Ошибка загрузки тем", error);
+      throw new Error("Ошибка загрузки тем");
+    }
+  };
+
+  const { data: topics, isLoading, error } = useQuery({
+    queryKey: ["topics"],
+    queryFn: fetchTopics,
+  });
+
+  const toggleTopic = (topicId: number) => {
+    setOpenTopics(prev =>
+      prev.includes(topicId)
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
     );
   };
 
-  // useEffect(() => {
-  //   if (!sectionId) return;
-
-  //   const index = menuData.findIndex(
-  //     (section) => section.id === Number(sectionId)
-  //   );
-
-  //   if (index !== -1) {
-  //     setOpenSection(prev =>
-  //       prev.map((_, i) => i === index)
-  //     );
-  //   }
-  // }, [sectionId]);
+  if (isLoading) return <div>Загрузка...</div>;
+  if (error) {
+    console.error("Ошибка при запросе тем:", error);
+    return <div>Ошибка загрузки</div>;
+  }
 
   return (
     <Grid sx={{ height: "100%", width: "100%" }}>
-      {isMobile && (
-        <IconButton
-          onClick={() => toggleDrawer(true)}
-          sx={{ position: "fixed", top: 16, left: 16, zIndex: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
       <StyledDrawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={isMobile ? open : true}
-        onClose={() => toggleDrawer(false)}
+        variant={"permanent"}
       >
-        <Content variant = "h4">СОДЕРЖАНИЕ</Content>
-        <Grid sx={{ flexGrow: "1" }}>
-        {menuData.map((section, index) => {
-          const hasLessons = section.lessons && section.lessons.length > 0
-          const isSectionActive = section.id === activeSectionId;
-
-          if (hasLessons){
-            return (
-            <Accordion 
-                key={index}
-                disableGutters
-                elevation={0}
-                expanded={isSectionActive}
-                onChange={() => toggleSection(index)}
-                sx={{
-                  background: "none",
-                  "&::before": { display: "none" }
-                }}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls={`panel${index}-content`}
-                  id={`panel${index}-header`}
+        <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
+          {topics?.map((topic, index) => {
+              return (
+                <Accordion
+                  key={index}
+                  disableGutters
+                  elevation={0}
+                  expanded={openTopics.includes(Number(topic.topic_id))}
+                  onChange={() => toggleTopic(Number(topic.topic_id))}
+                  sx={{
+                    background: "none",
+                    "&::before": { display: "none" },
+                  }}
                 >
-                  <Typography sx={{color: theme.palette.primaryScale[100] }}>
-                    {section.title}
-                  </Typography>
-                </AccordionSummary>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls={`panel${index}-content`}
+                    id={`panel${index}-header`}
+                    sx={{
+                      padding: theme.spacing(0, 6),
+                      "&:focus": {
+                        outline: "none",
+                      },
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ color: theme.palette.primaryScale[100] }}>
+                      {topic.order_number}. {topic.title}
+                    </Typography>
+                  </AccordionSummary>
 
-                <AccordionDetails>
-                  <List>
-                    {section.lessons!.map((lesson, lesIndex) => {
-                          const isActive = isSectionActive && index === activeLessonIndex;
+                  <AccordionDetails>
+                    <List>
+                      {topic.lessons.map((lesson, lesIndex) => {
+                        const isActive = lesson.lesson_id === activeLessonIndex;
+                        return (
+                          <ListItemButton
+                            key={lesIndex}
+                            onClick={() => {
+                              {
+                                navigate(`/course/${topic.topic_id}/lesson/${lesson.lesson_id}/section/1`)
+                              }
+                            }}
+                            selected={isActive}
+                            sx={{
+                              borderRadius: theme.shape.borderRadius,
+                              "&:hover": {
+                                backgroundColor: theme.palette.primaryScale[800]
+                              },
+                              backgroundColor: "inherit",
+                              "&.Mui-selected": {
+                                backgroundColor: theme.palette.primaryScale[700],
 
-                          return (
-                          <ListItemButton 
-                          key={lesIndex}
-                          onClick={() => {navigate(`/course/${section.id}/lesson/${lesIndex}`)}}
-                          selected={isActive}
-                          sx={{
-                            borderRadius: theme.shape.borderRadius,
-                            "&:hover": {
-                              backgroundColor: `rgba(${theme.palette.primaryScale[700]}, 0.85)`
-                            },
-                          }}>
-                            <Typography> {lesson} </Typography>
+                                "&:hover": {
+                                  backgroundColor: "#8fa6f7",
+                                },
+                              },
+
+                            }}>
+                            <Typography variant="h5"> {lesson.title} </Typography>
                           </ListItemButton>
-                    )})
-                    }
-                  </List>
-                </AccordionDetails>
-              </Accordion>
-          )}
-          else {
-            return (
-              <ListItemButton
-                key={index}
-                onClick={() => navigate(`/course/${section.id}`)}
-                selected={isSectionActive}
-                sx={{
-                  borderRadius: theme.shape.borderRadius,
-                }}
-              >
-                <Typography>
-                  {section.title}
-                </Typography>
-              </ListItemButton>
-            )
-          }
-        })}
+                        )
+                      })
+                      }
+                    </List>
+                  </AccordionDetails>
+                </Accordion>
+              )
+           
+            // else {
+            //   return (
+            //     <ListItemButton
+            //       key={index}
+            //       onClick={() => navigate(`/course/${topic.topic_id}`)}
+            //       selected={isTopicActive}
+            //       sx={{
+            //         borderRadius: theme.shape.borderRadius,
+            //         padding: theme.spacing(3, 6),
+            //         "&:hover": {
+            //           backgroundColor: theme.palette.primaryScale[800]
+            //         },
+            //         "&.Mui-selected, &.Mui-selected:hover": { backgroundColor: theme.palette.primaryScale[700] },
+            //       }}
+            //     >
+            //       <Typography variant="h4" >
+            //         {topic.order_number}. {topic.title}
+            //       </Typography>
+            //     </ListItemButton>
+            //   )
+            // }
+          })}
         </Grid>
       </StyledDrawer>
     </Grid>

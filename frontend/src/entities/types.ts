@@ -1,11 +1,32 @@
 export type Lesson = {
-  id: number;
+  lesson_id: number;
   title: string;
-  isCompleted: boolean;
+  order_number: number;
 };
 
 export type Topic = {
-  topicId: number;
+  topic_id: number;
   title: string;
+  order_number: number;
   lessons: Lesson[];
 };
+
+export type Section = {
+  section_id: number;
+  title: string;
+  order_number: number;
+  theory_text: string;
+};
+
+export type SectionProgressInfo = {
+  section_id: number;
+  title: string;
+  completed: boolean;
+  type: "theory" | "game";
+  order_number: number;
+}
+
+export type Stars = {
+  user_id: number;
+  total_stars: number;
+}
