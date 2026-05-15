@@ -5,6 +5,8 @@ import { Box, Typography } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { useAuth } from "../app/providers/AuthProvider";
 import api from "../api/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 interface ContentProps {
   section: Section | undefined;
@@ -14,9 +16,14 @@ interface ContentProps {
 const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { user } = useAuth();
-  const sectionId = section?.section_id;
+  const sectionId = Number(section?.section_id);
+  const queryClient = useQueryClient();
+  const {lessonId} = useParams();
   useEffect(() => {
+    if (section?.title !== "Игра") return;
+
     const handleMessage = async (event: MessageEvent) => {
+      console.log("MESSAGE:", event.data);
       if (event.data?.type !== "STARS_CHANGED") return;
 
       const stars = event.data.stars;
@@ -30,19 +37,32 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
             stars_earned: stars,
           }
         );
+        
+        await api.post(
+          `/api/v1/users/${user?.user_id}/sections/${sectionId}/status`,
+          { completed: true }
+        );
 
         console.log("Звезды сохранены");
+
+        queryClient.invalidateQueries({
+          queryKey: ["sections_progress", lessonId],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["stars", user?.user_id],
+        });
+
       } catch (err) {
         console.error("Ошибка сохранения звезд", err);
       }
     };
 
     window.addEventListener("message", handleMessage);
-
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [user, sectionId]);
+  }, [user, section]);
 
   if (section === undefined) return <div>В уроке еще нет секций, но должна быть хоть 1!!</div>
 
@@ -74,8 +94,6 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
             }}
           />
         </Box>
-
-        <div ref={bottomRef} />
       </Box>
     );
   }

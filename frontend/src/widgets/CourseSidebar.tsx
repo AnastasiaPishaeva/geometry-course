@@ -91,7 +91,7 @@ const SidebarMenu = () => {
                 disableGutters
                 elevation={0}
                 expanded={openTopics.includes(Number(topic.topic_id))}
-                onChange={() => toggleTopic(Number(topic.topic_id))}
+                onChange={() => { if (!isLocked) { toggleTopic(Number(topic.topic_id)) } }}
                 sx={{
                   background: "none",
                   "&::before": { display: "none" },
@@ -112,7 +112,7 @@ const SidebarMenu = () => {
                     container
                     alignItems="center"
                     justifyContent="space-between"
-                  >
+                    sx={{ width: "100%" }}                 >
                     <Typography variant="h4" sx={{ color: theme.palette.primaryScale[100] }}>
                       {topic.order_number}. {topic.title}
                     </Typography>
