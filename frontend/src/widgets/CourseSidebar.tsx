@@ -17,7 +17,8 @@ import type { Topic } from "../entities/types";
 import api from "../api/api";
 import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
-import LockOpenIcon from "@mui/icons-material/LockOpen";
+import { useAuth } from "../app/providers/AuthProvider";
+import type { Stars } from "../entities/types";
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   height: "100%",
@@ -36,13 +37,18 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 const SidebarMenu = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const stars = queryClient.getQueryData<number>(["stars"]) ?? 0;
+  const { user } = useAuth();
+  const stars =
+    queryClient.getQueryData<Stars>(["stars", user?.user_id]) ?? {
+      user_id: 0,
+      total_stars: 0,
+    }; 
+  const totalStars = stars.total_stars;
   const { topicId, lessonId } = useParams();
-  const activeTopicIndex = Number(topicId);
   const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
   const REQUIRED_STARS = 20;
-  const isLastTopicLocked = stars < REQUIRED_STARS;
+  const isLastTopicLocked = totalStars < REQUIRED_STARS;
   const [openTopics, setOpenTopics] = useState<number[]>(
     topicId ? [Number(topicId)] : []
   );
@@ -84,7 +90,9 @@ const SidebarMenu = () => {
         <Grid sx={{ flexGrow: "1", paddingTop: "32px", }}>
           {topics?.map((topic, index) => {
             const isLastTopic = index === topics.length - 1;
+            console.log(stars);
             const isLocked = isLastTopic && isLastTopicLocked;
+            console.log(isLocked);
             return (
               <Accordion
                 key={index}
