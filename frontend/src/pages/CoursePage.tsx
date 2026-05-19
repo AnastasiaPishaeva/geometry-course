@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../app/providers/AuthProvider";
 import { useQueryClient } from "@tanstack/react-query";
 
-const ContentPage = () => {
+const CoursePage = () => {
   const theme = useTheme();
   const contentRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -126,5 +126,5 @@ const ContentPage = () => {
   );
 };
 
-export default ContentPage;
+export default CoursePage;
 
