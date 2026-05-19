@@ -3,7 +3,10 @@ import {Grid, Typography, Box} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CourseProgramItem from "../widgets/CourseProgramItem.tsx";
 import QuestionItem from "../widgets/QuestionItem.tsx";
-
+import mp1 from "../assets/HomePage/mp1.svg";
+import mp2 from "../assets/HomePage/mp2.svg";
+import mp3 from "../assets/HomePage/mp3.svg";
+import mp4 from "../assets/HomePage/mp4.svg";
 
 const HomePage = () => {
     const theme = useTheme();
@@ -55,7 +58,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/HomePage/mp1.svg"
+                        src={mp1}
                         sx={{
                             width: "100%",
                             height: "auto",
@@ -76,7 +79,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/HomePage/mp2.svg"
+                        src={mp2}
                         sx={{
                             width: "100%",
                             height: "auto",
@@ -97,7 +100,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/HomePage/mp3.svg"
+                        src={mp3}
                         sx={{
                             width: "100%",
                             height: "auto",
@@ -118,7 +121,7 @@ const HomePage = () => {
                 <Grid size={{ xs: 3 }} sx={{flexDirection: "column", alignItems: "center"}}>
                     <Box
                         component="img"
-                        src="/src/assets/HomePage/mp4.svg"
+                        src={mp4}
                         sx={{
                             width: "100%",
                             height: "auto",

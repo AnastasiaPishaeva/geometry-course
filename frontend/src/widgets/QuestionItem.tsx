@@ -1,6 +1,8 @@
 ﻿import {Collapse, Grid, IconButton, Typography} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {useState} from "react";
+import minus_button from "../assets/HomePage/minus_button.svg";
+import plus_button from "../assets/HomePage/plus_button.svg";
 
 type QuestionItemProps = {
     name: string;
@@ -48,9 +50,9 @@ const QuestionItem = ({name, description}:QuestionItemProps)=> {
                     disableRipple
                 >
                     {expanded ? (
-                        <img src="/src/assets/HomePage/minus_button.svg" alt="minus" />
+                        <img src={minus_button} />
                     ) : (
-                        <img src="/src/assets/HomePage/plus_button.svg" alt="plus" />
+                        <img src={plus_button} />
                     )}
                 </IconButton>
                 </Grid>

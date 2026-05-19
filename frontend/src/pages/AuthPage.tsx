@@ -6,7 +6,6 @@ import {
     Button,
     InputAdornment,
     IconButton,
-    Link
 } from "@mui/material";
 import { styled, useTheme } from "@mui/system";
 import Visibility from "@mui/icons-material/Visibility";
@@ -14,6 +13,8 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/providers/AuthProvider';
 import api from "../api/api";
+import Link from "@mui/material/Link";
+import { Link as RouterLink } from "react-router-dom";
 
 const Background = styled(Box)({
     width: "99vw",
@@ -177,12 +178,12 @@ const LoginPage = () => {
                 <SubmitButton disabled={!email || !password} onClick={handleLogin} sx={{ marginBottom: "10px" }}>Войти</SubmitButton>
                 <Typography variant="text1" sx={{ textAlign: "center", color: theme.palette.primaryScale[100], }}>
                     У вас еще нет аккаунта?{" "}
-                    <Link
+                    <Link component={RouterLink}
                         sx={{
                             color: theme.palette.primaryScale[300],
                             fontWeight: "500",
                             "&:hover": { color: theme.palette.primaryScale[300] }
-                        }} href="/registration" underline="hover">
+                        }} to="/registration" underline="hover">
                         Зарегистрируйтесь сейчас
                     </Link>
                 </Typography>

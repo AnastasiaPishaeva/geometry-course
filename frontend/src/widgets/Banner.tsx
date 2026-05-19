@@ -1,7 +1,9 @@
 ﻿import { Grid, Box, Typography, Button, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-
+import logo from "../assets/HomePage/logo.svg";
+import pattern1 from "../assets/HomePage/pattern1.svg";
+import pattern2 from "../assets/HomePage/pattern2.svg";
 
 const Banner = () => {
     const theme = useTheme();
@@ -27,7 +29,7 @@ const Banner = () => {
                 >
                     <Box
                         component="img"
-                        src="/src/assets/HomePage/logo.svg"
+                        src={logo}
                         sx={{
                             width: "258px",
                         }}
@@ -85,7 +87,7 @@ const Banner = () => {
                 </Box>
                 <Box
                     component="img"
-                    src="/src/assets/HomePage/pattern1.svg"
+                    src={pattern1}
                     sx={{
                         position: "absolute",
                         top: 0,
@@ -96,7 +98,7 @@ const Banner = () => {
 
                 <Box
                     component="img"
-                    src="/src/assets/HomePage/pattern2.svg"
+                    src={pattern2}
                     sx={{
                         position: "absolute",
                         bottom: 0,
