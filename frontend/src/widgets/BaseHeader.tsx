@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Grid, Typography, Box } from "@mui/material";
-import { styled, width } from '@mui/system';
+import { styled } from '@mui/system';
 import { useTheme } from "@mui/material/styles";
 import logo from '../assets/logo.png'
-import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../app/providers/AuthProvider";

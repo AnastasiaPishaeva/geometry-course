@@ -93,7 +93,7 @@ const RegistrationPage = () => {
             last_name: lastName,
         });
         try {
-            const res = await api.post("api/v1/auth/register", {
+            await api.post("api/v1/auth/register", {
                 email,
                 password,
                 first_name: firstName,
