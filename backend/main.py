@@ -1,4 +1,11 @@
-from fastapi import FastAPI, APIRouter, Body, HTTPException
+from fastapi import (
+    FastAPI,
+    APIRouter,
+    Body,
+    HTTPException,
+    Response,
+    Cookie
+)
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 from pydantic import BaseModel, Field
@@ -100,6 +107,14 @@ def ensure_auth_tables() -> None:
             )
         """))
 
+        connection.execute(text("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                session_token TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(user_id),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """))
+
 
 ensure_auth_tables()
 
@@ -142,13 +157,21 @@ def register(payload: RegistrationPayload):
     summary="Вход пользователя",
     description="Необходимо ввести email и пароль"
 )
-def login(payload: LoginPayload):
+def login(
+    payload: LoginPayload,
+    response: Response
+):
     email = normalize_email(payload.email)
 
     with engine.connect() as connection:
         user_row = connection.execute(
             text("""
-                SELECT user_id, email, first_name, last_name, password_hash
+                SELECT
+                    user_id,
+                    email,
+                    first_name,
+                    last_name,
+                    password_hash
                 FROM users
                 WHERE email = :email
             """),
@@ -156,14 +179,106 @@ def login(payload: LoginPayload):
         ).fetchone()
 
     if not user_row:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
 
     user = dict(user_row._mapping)
 
-    if not verify_password(payload.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not verify_password(
+        payload.password,
+        user["password_hash"]
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
 
-    return {"user": user}
+    session_token = secrets.token_urlsafe(32)
+
+    with engine.begin() as connection:
+        connection.execute(
+            text("""
+                INSERT INTO sessions (
+                    session_token,
+                    user_id
+                )
+                VALUES (
+                    :session_token,
+                    :user_id
+                )
+            """),
+            {
+                "session_token": session_token,
+                "user_id": user["user_id"]
+            }
+        )
+
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="lax"
+    )
+
+    return {
+        "success": True
+    }
+
+@api.get("/auth/me")
+def get_me(
+    session_token: str | None = Cookie(default=None)
+):
+    if not session_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated"
+        )
+
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT
+                    u.user_id,
+                    u.email,
+                    u.first_name,
+                    u.last_name,
+                    u.created_at
+                FROM users u
+                JOIN sessions s
+                    ON s.user_id = u.user_id
+                WHERE s.session_token = :token
+            """),
+            {"token": session_token}
+        ).fetchone()
+
+    if not result:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid session"
+        )
+
+    return dict(result._mapping)
+@api.post("/auth/logout")
+def logout(
+    response: Response,
+    session_token: str | None = Cookie(default=None)
+):
+    if session_token:
+        with engine.begin() as connection:
+            connection.execute(
+                text("""
+                    DELETE FROM sessions
+                    WHERE session_token = :token
+                """),
+                {"token": session_token}
+            )
+
+    response.delete_cookie("session_token")
+
+    return {"success": True}
 
 @api.get(
     "/users/{user_id}",
