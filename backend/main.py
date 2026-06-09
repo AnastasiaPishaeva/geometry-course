@@ -60,6 +60,8 @@ class LoginPayload(BaseModel):
     email: str
     password: str = Field(min_length=1, max_length=128)
 
+class RequiredStarsUpdate(BaseModel):
+    required_stars: int
 
 class UpdateUserPayload(BaseModel):
     email: str | None = None
@@ -581,6 +583,67 @@ def add_progress(user_id: int, section_id: int, payload: ProgressPayload):
             )
 
     return {"section_id": section_id, "stars": payload.stars_earned}
+@api.get(
+    "/lessons/{lesson_id}/required-stars",
+    summary="Получить количество необходимых звезд"
+)
+def get_required_stars(
+    lesson_id: int
+):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT
+                    lesson_id,
+                    required_stars
+                FROM lessons
+                WHERE lesson_id = :lesson_id
+            """),
+            {
+                "lesson_id": lesson_id
+            }
+        ).fetchone()
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="Lesson not found"
+        )
+
+    return dict(result._mapping)
+
+@api.put(
+    "/lessons/{lesson_id}/required-stars",
+    summary="Изменить количество необходимых звезд"
+)
+def update_required_stars(
+    lesson_id: int,
+    payload: RequiredStarsUpdate
+):
+    with engine.begin() as connection:
+        updated = connection.execute(
+            text("""
+                UPDATE lessons
+                SET required_stars = :stars
+                WHERE lesson_id = :lesson_id
+                RETURNING
+                    lesson_id,
+                    required_stars
+            """),
+            {
+                "lesson_id": lesson_id,
+                "stars": payload.required_stars
+            }
+        ).fetchone()
+
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Lesson not found"
+        )
+
+    return dict(updated._mapping)
 
 
 app.include_router(api)
+
