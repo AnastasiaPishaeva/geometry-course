@@ -3,6 +3,7 @@ import Content from "./Content";
 import type { Section } from "../entities/types";
 import { useParams } from "react-router-dom";
 import ButtonToMove from "../widgets/ButtonToMove"
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LessonContentProps {
   sections: Section[];
@@ -11,17 +12,17 @@ interface LessonContentProps {
 
 const LessonContent: React.FC<LessonContentProps> = ({ sections, bottomRef }) => {
   const { sectionId, lessonId } = useParams();
+  const queryClient = useQueryClient();
   if (!sectionId) return <div>Не выбрана секция...</div>;
   if (!lessonId) return <div>Не выбран урок...</div>
 
   const activeSection = sections.find(t => t.order_number === Number(sectionId));
-
   return (
     <>
       <Tabs
         lesson={Number(lessonId)} activeSection={Number(activeSection?.order_number)}
       />
-      <Content section={activeSection} bottomRef={bottomRef}/>
+      <Content section={activeSection} bottomRef={bottomRef} />
       {sections.length > 1 && (
         <ButtonToMove sections={sections} />
       )}

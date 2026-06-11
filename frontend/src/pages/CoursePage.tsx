@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import LessonContent from "../widgets/LessonContent";
-import type { Section, User } from "../entities/types";
+import type { Section, Stars, User } from "../entities/types";
 import SidebarMenu from "../widgets/CourseSidebar";
 import { Grid, } from "@mui/material";
 import api from "../api/api";
@@ -15,6 +15,10 @@ const CoursePage = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { lessonId, sectionId } = useParams();
   const queryClient = useQueryClient();
+  const requiredStarsMap = queryClient.getQueryData<
+    Record<number, number>
+  >(["requiredStars"]);
+
 
   if (!lessonId) {
     return <div>Тема не найдена</div>
@@ -61,7 +65,15 @@ const CoursePage = () => {
 
   const activeSectionId = sections?.find(t => t.order_number === Number(sectionId))?.section_id;
   console.log(activeSectionId);
-  
+
+  const stars =
+      queryClient.getQueryData<Stars>(["stars", user?.user_id]) ?? {
+        user_id: 0,
+        total_stars: 0,
+      };
+      
+  const requiredStars = requiredStarsMap?.[Number(lessonId)];
+  const isLocked = requiredStars !== undefined && stars.total_stars < requiredStars;
 
   useEffect(() => {
     contentRef.current?.scrollTo({
@@ -112,7 +124,7 @@ const CoursePage = () => {
 
     return () => observer.disconnect();
   }, [sectionId, activeSectionId]);
-  
+
   if (userError) {
     console.error("Ошибка пользователя: Пользователь не авторизован:", sectionsError);
     return <div>Ошибка пользователя: Пользователь не авторизован</div>;

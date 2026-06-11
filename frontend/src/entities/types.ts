@@ -30,6 +30,10 @@ export type Stars = {
   user_id: number;
   total_stars: number;
 }
+export type RequiredStars = {
+  lesson_id: number;
+  required_stars: number;
+}
 
 export type User = {
   "user_id": number,
