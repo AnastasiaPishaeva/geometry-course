@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import type { Section } from "../entities/types";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { useAuth } from "../app/providers/AuthProvider";
 import api from "../api/api";
@@ -18,7 +18,8 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
   const { user } = useAuth();
   const sectionId = Number(section?.section_id);
   const queryClient = useQueryClient();
-  const {lessonId} = useParams();
+  const { lessonId } = useParams();
+  const theme = useTheme();
   useEffect(() => {
     if (section?.title !== "Игра") return;
 
@@ -37,7 +38,7 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
             stars_earned: stars,
           }
         );
-        
+
         await api.post(
           `/api/v1/users/${user?.user_id}/sections/${sectionId}/status`,
           { completed: true }
@@ -74,18 +75,19 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
         justifyContent: "center",
         flexDirection: "column",
       }}>
-        <Typography variant="h2" sx={{ mb: 2 }}>
+        <Typography variant="h2" sx={{ mb: 2, color: theme.palette.primaryScale[100] }}>
           {section.title}
         </Typography>
 
         <Box sx={{
           width: "100%",
           aspectRatio: "16 / 12",
+          paddingBottom : "20px"
         }}
         >
           <iframe
             ref={iframeRef}
-            src="/game/index.html"
+            src={`${import.meta.env.BASE_URL}game/index.html`}
             style={{
               width: "100%",
               height: "100%",
@@ -103,39 +105,45 @@ const Content: React.FC<ContentProps> = ({ section, bottomRef }) => {
     <div style={{ marginBottom: "60px" }}>
       <Typography variant="h2"
         sx={{
-          marginBottom: "20px"
+          marginBottom: "20px",
+          color: theme.palette.primaryScale[100]
         }}>
         {section.title}
       </Typography>
-
-      <ReactMarkdown
-        remarkPlugins={[remarkBreaks]}
-        components={{
-          p: ({ children }) => (
-            <Typography
-              variant="text1"
-              component="div"
-              sx={{
-                mb: 2,
-                lineHeight: 1.9,
-              }}
-            >
-              {children}
-            </Typography>
-          ),
-
-          strong: ({ children }) => (
-            <Typography
-              component="span"
-              fontWeight="bold"
-            >
-              {children}
-            </Typography>
-          ),
+      <Box
+        sx={{
+          color: theme.palette.primaryScale[100],
         }}
       >
-        {fixedText}
-      </ReactMarkdown>
+        <ReactMarkdown
+          remarkPlugins={[remarkBreaks]}
+          components={{
+            p: ({ children }) => (
+              <Typography
+                variant="text1"
+                component="div"
+                sx={{
+                  mb: 2,
+                  lineHeight: 1.9,
+                }}
+              >
+                {children}
+              </Typography>
+            ),
+
+            strong: ({ children }) => (
+              <Typography
+                component="span"
+                fontWeight="bold"
+              >
+                {children}
+              </Typography>
+            ),
+          }}
+        >
+          {fixedText}
+        </ReactMarkdown>
+      </Box>
 
       <div ref={bottomRef} />
     </div>

@@ -18,7 +18,7 @@ const QuestionItem = ({name, description}:QuestionItemProps)=> {
                     width: "100%",
                     borderRadius: expanded ? "20px 20px 0 0" : "20px",
                     border: `1px solid ${theme.palette.primaryScale[500]}`,
-                    backgroundColor: "#ffff",
+                    backgroundColor: theme.palette.primaryScale[900],
                     height: "62px",
                     display: "flex",
                     alignItems: "center",

@@ -7,9 +7,8 @@ import GameUnfinishedButton from "../assets/Tabs/GameUnfinished.png";
 import GameFinishedButton from "../assets/Tabs/GameFinished.png";
 import { useNavigate, useParams } from "react-router-dom";
 
-import type { SectionProgressInfo } from "../entities/types";
+import type { SectionProgressInfo, User } from "../entities/types";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../app/providers/AuthProvider";
 
 interface TabsProps {
   lesson: number;
@@ -29,7 +28,6 @@ const images = {
 
 const Tabs: React.FC<TabsProps> = ({ lesson, activeSection }) => {
   const theme = useTheme();
-  const { user } = useAuth();
   const { topicId, lessonId } = useParams();
   const navigate = useNavigate();
   const fetchSectionProgress = async (): Promise<SectionProgressInfo[]> => {
@@ -40,6 +38,25 @@ const Tabs: React.FC<TabsProps> = ({ lesson, activeSection }) => {
       throw new Error("Ошибка загрузки прогресса по секциям");
     }
   };
+  
+  const fetchUser = async (): Promise<User> => {
+      try {
+        const res = await api.get<User>(`api/v1/auth/me`);
+        return res.data;
+      } catch (error) {
+        console.error("Ошибка загрузки активного пользователя", error);
+        throw new Error("Ошибка загрузки активного пользователя");
+      }
+    };
+  
+    const {
+      data: user,
+      isLoading: userLoading,
+      error: userError,
+    } = useQuery({
+      queryKey: ["activeUser"],
+      queryFn: fetchUser,
+    });
 
   const { data: progress, isLoading, error } = useQuery({
     queryKey: ["sections_progress", lesson],

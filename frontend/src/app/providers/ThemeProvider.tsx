@@ -1,7 +1,12 @@
-import { createContext, useMemo } from "react";
+import { createContext, useMemo, useState } from "react";
 import type {ReactNode} from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+
+interface ThemeContextType {
+  mode: "light" | "dark";
+  toggleTheme: () => void;
+}
 
 declare module "@mui/material/styles" {
   interface Palette {
@@ -33,7 +38,12 @@ declare module "@mui/material/styles" {
       1000?: string;
     };
   }
-
+  
+  interface TypeBackground {
+      textfield : string;
+      text : string,
+  }
+  
   interface Theme {
     shape: {
       borderRadius: string;
@@ -76,26 +86,27 @@ declare module "@mui/material/Typography" {
 
 
 
-const getTheme = () =>
+const getTheme = (mode: string) =>
   createTheme({
     palette: {
-      mode: "light", 
       primaryScale: {
-        100: "#091434",
-        200: "#1A0041",
-        300: "#402E7A",
-        400: "#4B3BCF",
-        500: "#4B70F5",
-        600: "#3DC2EB",
-        700: "#A4B7F9",
-        800: "#D1DAFB",
-        900: "#E7ECFC",
-        1000: "#F2F5FD"
+        100: mode === "light" ? "#091434" : "#F2F5FD",
+        200: mode === "light" ?  "#1A0041" : "#ede0ff",
+        300: mode === "light" ? "#402E7A": "#a791ef" ,
+        400: mode === "light" ? "#4B3BCF" : "#270652",
+        500: mode === "light" ? "#4B70F5" : "#7a5bc7",
+        600: mode === "light" ? "#8fa6f7" : "#33247c",
+        700: mode === "light" ? "#A4B7F9" : "#403378",
+        800: mode === "light" ?  "#D1DAFB" : "#2d26529a",
+        900: mode === "light" ? "#E7ECFC" : "#421c76d7",
+        1000: mode === "light" ? "#F2F5FD" : "#1a0438"
       },
 
       background: {
-        default: "#fff",
-        paper: "#E7ECFC",
+        default: mode === "light" ? "#F2F5FD" :  "#1a0438",
+        paper: mode === "light" ? "#E7ECFC" : "#1e0246",
+        textfield: mode === "light" ? "#F2F5FD" : "#2c0661",
+        text: mode === "light" ? "#000000" : "#f6f0fe"
       },
     },
 
@@ -181,13 +192,26 @@ interface ThemeContextType {
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProviderWrapper = ({ children }: { children: ReactNode }) => {
-  const theme = useMemo(() => getTheme(), []);
+  const [mode, setMode] = useState<"light" | "dark">(() => {
+    return (
+      (localStorage.getItem("theme") as "light" | "dark") || "light"
+    );
+  });
+
+  const theme = useMemo(() => getTheme(mode), [mode]);
 
   const toggleTheme = () => {
-  };
+  setMode((prev) => {
+    const newMode = prev === "light" ? "dark" : "light";
+
+    localStorage.setItem("theme", newMode);
+
+    return newMode;
+  });
+};
 
   return (
-    <ThemeContext.Provider value={{ toggleTheme }}>
+    <ThemeContext.Provider value={{ mode, toggleTheme }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}

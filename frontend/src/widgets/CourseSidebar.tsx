@@ -13,16 +13,14 @@ import { styled } from "@mui/system";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Topic } from "../entities/types";
+import type { Topic, User } from "../entities/types";
 import api from "../api/api";
 import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
-import { useAuth } from "../app/providers/AuthProvider";
 import type { Stars } from "../entities/types";
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   height: "100%",
-  color: theme.palette.primaryScale[900],
   "& .MuiDrawer-paper": {
     width: "75vw",
     position: "relative",
@@ -30,14 +28,36 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
     "&::-webkit-scrollbar": { display: "none" },
     [theme.breakpoints.up("md")]: {
       width: "auto"
-    }
+    },
+    "& .MuiTypography-root": {
+      color:theme.palette.primaryScale[100],
+    },
   }
 }));
 
 const SidebarMenu = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+
+  const fetchUser = async (): Promise<User> => {
+          try {
+              const res = await api.get<User>(`api/v1/auth/me`);
+              return res.data;
+          } catch (error) {
+              console.error("Ошибка загрузки активного пользователя", error);
+              throw new Error("Ошибка загрузки активного пользователя");
+          }
+      };
+  
+      const {
+          data: user,
+          isLoading: userLoading,
+          error: userError,
+      } = useQuery({
+          queryKey: ["activeUser"],
+          queryFn: fetchUser,
+      });
+
   const stars =
     queryClient.getQueryData<Stars>(["stars", user?.user_id]) ?? {
       user_id: 0,
@@ -47,7 +67,7 @@ const SidebarMenu = () => {
   const { topicId, lessonId } = useParams();
   const activeLessonIndex = lessonId ? Number(lessonId) : null;
   const theme = useTheme();
-  const REQUIRED_STARS = 20;
+  const REQUIRED_STARS = 8;
   const isLastTopicLocked = totalStars < REQUIRED_STARS;
   const [openTopics, setOpenTopics] = useState<number[]>(
     topicId ? [Number(topicId)] : []
@@ -106,7 +126,7 @@ const SidebarMenu = () => {
                 }}
               >
                 <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
+                  expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.primaryScale[100] }} />}
                   aria-controls={`panel${index}-content`}
                   id={`panel${index}-header`}
                   sx={{
@@ -159,7 +179,7 @@ const SidebarMenu = () => {
                               backgroundColor: theme.palette.primaryScale[700],
 
                               "&:hover": {
-                                backgroundColor: "#8fa6f7",
+                                backgroundColor: theme.palette.primaryScale[600],
                               },
                             },
 
@@ -173,28 +193,6 @@ const SidebarMenu = () => {
                 </AccordionDetails>
               </Accordion>
             )
-
-            // else {
-            //   return (
-            //     <ListItemButton
-            //       key={index}
-            //       onClick={() => navigate(`/course/${topic.topic_id}`)}
-            //       selected={isTopicActive}
-            //       sx={{
-            //         borderRadius: theme.shape.borderRadius,
-            //         padding: theme.spacing(3, 6),
-            //         "&:hover": {
-            //           backgroundColor: theme.palette.primaryScale[800]
-            //         },
-            //         "&.Mui-selected, &.Mui-selected:hover": { backgroundColor: theme.palette.primaryScale[700] },
-            //       }}
-            //     >
-            //       <Typography variant="h4" >
-            //         {topic.order_number}. {topic.title}
-            //       </Typography>
-            //     </ListItemButton>
-            //   )
-            // }
           })}
         </Grid>
       </StyledDrawer>

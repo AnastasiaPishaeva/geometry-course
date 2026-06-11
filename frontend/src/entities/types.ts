@@ -30,3 +30,11 @@ export type Stars = {
   user_id: number;
   total_stars: number;
 }
+
+export type User = {
+  "user_id": number,
+  "email": string,
+  "first_name": string,
+  "last_name": string,
+  "created_at": string
+}

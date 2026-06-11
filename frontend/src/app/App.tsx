@@ -1,7 +1,7 @@
 import { AppRoutes } from './router.tsx'
 import { QueryProvider } from './providers/QueryProvider.tsx'
 import { ThemeProviderWrapper } from "./providers/ThemeProvider.tsx";
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter, HashRouter } from "react-router-dom";
 import { CssBaseline } from "@mui/material";
 import { AuthProvider } from './providers/AuthProvider.tsx';
 
@@ -11,9 +11,9 @@ export const App = () => {
       <QueryProvider>
         <AuthProvider>
           <CssBaseline />
-          <HashRouter >
+          <BrowserRouter >
             <AppRoutes />
-          </HashRouter >
+          </BrowserRouter >
         </AuthProvider>
       </QueryProvider>
     </ThemeProviderWrapper>

@@ -8,6 +8,7 @@ import {
     IconButton,
     Link
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import { styled, useTheme } from "@mui/system";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -15,14 +16,14 @@ import { useNavigate } from 'react-router-dom';
 import api from "../api/api";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Background = styled(Box)({
+const Background = styled(Box)(({ theme }) => ({
     width: "99vw",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.palette.primaryScale[1000],
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: "20px",
-});
+}));
 const LoginContainer = styled(Box)(({ theme }) => ({
     width: "600px",
     background: theme.palette.primaryScale[900],
@@ -36,17 +37,19 @@ const LoginContainer = styled(Box)(({ theme }) => ({
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
     width: "100%",
+    "& .MuiInputBase-input": {
+        color: theme.palette.background.text},
     "& .MuiOutlinedInput-root": {
         borderRadius: "10px",
-        backgroundColor: theme.palette.primaryScale[1000],
+        backgroundColor: theme.palette.background.textfield,
         "& fieldset": {
-            borderColor: "#E4E4E8"
+            borderColor: theme.palette.primaryScale[900]
         },
         "&:hover fieldset": {
-            borderColor: theme.palette.primaryScale[700]
+            borderColor: theme.palette.primaryScale[1000]
         },
         "&.Mui-focused fieldset": {
-            borderColor: theme.palette.primaryScale[700]
+            borderColor: theme.palette.primaryScale[1000]
         }
     }
 }));
@@ -231,12 +234,12 @@ const RegistrationPage = () => {
                                 </SubmitButton>
                                 <Typography variant="text1" sx={{ textAlign: "center", color: theme.palette.primaryScale[100], }}>
                                     У вас уже есть аккаунт?{" "}
-                                    <Link
+                                    <Link component={RouterLink}
                                         sx={{
                                             color: theme.palette.primaryScale[300],
                                             fontWeight: "500",
                                             "&:hover": { color: theme.palette.primaryScale[300] }
-                                        }} href="/authorization" underline="hover">
+                                        }} to="/authorization" underline="hover">
                                         Войти
                                     </Link>
                                 </Typography>

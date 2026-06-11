@@ -1,20 +1,18 @@
 import { useParams } from "react-router-dom";
 import LessonContent from "../widgets/LessonContent";
-import type { Section } from "../entities/types";
+import type { Section, User } from "../entities/types";
 import SidebarMenu from "../widgets/CourseSidebar";
 import { Grid, } from "@mui/material";
 import api from "../api/api";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@mui/material/styles";
 import { useEffect, useRef } from "react";
-import { useAuth } from "../app/providers/AuthProvider";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CoursePage = () => {
   const theme = useTheme();
   const contentRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
   const { lessonId, sectionId } = useParams();
   const queryClient = useQueryClient();
 
@@ -32,14 +30,38 @@ const CoursePage = () => {
     }
   };
 
-  const { data: sections, isLoading, error } = useQuery({
-    queryKey: ["sections", lessonId], //секции конкретного урока
+  const fetchUser = async (): Promise<User> => {
+    try {
+      const res = await api.get<User>(`api/v1/auth/me`);
+      return res.data;
+    } catch (error) {
+      console.error("Ошибка загрузки активного пользователя", error);
+      throw new Error("Ошибка загрузки активного пользователя");
+    }
+  };
+
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useQuery({
+    queryKey: ["activeUser"],
+    queryFn: fetchUser,
+  });
+
+  const {
+    data: sections,
+    isLoading: sectionsLoading,
+    error: sectionsError,
+  } = useQuery({
+    queryKey: ["sections", lessonId],
     queryFn: fetchSection,
     enabled: !!user?.user_id,
   });
 
   const activeSectionId = sections?.find(t => t.order_number === Number(sectionId))?.section_id;
   console.log(activeSectionId);
+  
 
   useEffect(() => {
     contentRef.current?.scrollTo({
@@ -90,11 +112,16 @@ const CoursePage = () => {
 
     return () => observer.disconnect();
   }, [sectionId, activeSectionId]);
+  
+  if (userError) {
+    console.error("Ошибка пользователя: Пользователь не авторизован:", sectionsError);
+    return <div>Ошибка пользователя: Пользователь не авторизован</div>;
+  }
 
   if (!sections) return <div>Нет информации...</div>;
-  if (isLoading) return <div>Загрузка...</div>;
-  if (error) {
-    console.error("Ошибка при запросе секций:", error);
+  if (sectionsLoading) return <div>Загрузка...</div>;
+  if (sectionsError) {
+    console.error("Ошибка при запросе секций:", sectionsError);
     return <div>Ошибка загрузки</div>;
   }
 

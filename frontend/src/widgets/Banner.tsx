@@ -1,14 +1,20 @@
 ﻿import { Grid, Box, Typography, Button, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/HomePage/logo.svg";
-import pattern1 from "../assets/HomePage/pattern1.svg";
-import pattern2 from "../assets/HomePage/pattern2.svg";
+import logo_light from "../assets/HomePage/logo_light.svg";
+import logo_dark from "../assets/HomePage/logo_dark.svg";
+import pattern1_light from "../assets/HomePage/pattern1.svg";
+import pattern2_light from "../assets/HomePage/pattern2.svg";
+import pattern1_dark from "../assets/HomePage/pattern1_dark.svg";
+import pattern2_dark from "../assets/HomePage/pattern2_dark.svg";
+import { useContext } from "react";
+import { ThemeContext } from "../app/providers/ThemeProvider";
 
 const Banner = () => {
     const theme = useTheme();
     const isLessThan1100 = useMediaQuery("(max-width:1100px)");
     const navigate = useNavigate();
+    const { mode } = useContext(ThemeContext);
     return (
         <Grid container sx={{ width: "100%" }}>
             <Grid size={{ xs: 12 }} sx={{
@@ -29,7 +35,7 @@ const Banner = () => {
                 >
                     <Box
                         component="img"
-                        src={logo}
+                        src={mode === "light" ? logo_light : logo_dark}
                         sx={{
                             width: "258px",
                         }}
@@ -87,7 +93,7 @@ const Banner = () => {
                 </Box>
                 <Box
                     component="img"
-                    src={pattern1}
+                    src={mode === "light" ? pattern1_light: pattern1_dark}
                     sx={{
                         position: "absolute",
                         top: 0,
@@ -98,7 +104,7 @@ const Banner = () => {
 
                 <Box
                     component="img"
-                    src={pattern2}
+                    src={mode === "light" ? pattern2_light: pattern2_dark}
                     sx={{
                         position: "absolute",
                         bottom: 0,

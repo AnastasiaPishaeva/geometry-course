@@ -11,19 +11,18 @@ import { styled, useTheme } from "@mui/system";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../app/providers/AuthProvider';
 import api from "../api/api";
 import Link from "@mui/material/Link";
 import { Link as RouterLink } from "react-router-dom";
 
-const Background = styled(Box)({
+const Background = styled(Box)(({ theme }) => ({
     width: "99vw",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.palette.primaryScale[1000],
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: "20px",
-});
+}));
 const LoginContainer = styled(Box)(({ theme }) => ({
     width: "600px",
     background: theme.palette.primaryScale[900],
@@ -37,17 +36,19 @@ const LoginContainer = styled(Box)(({ theme }) => ({
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
     width: "100%",
+    "& .MuiInputBase-input": {
+        color: theme.palette.background.text},
     "& .MuiOutlinedInput-root": {
         borderRadius: "10px",
-        backgroundColor: theme.palette.primaryScale[1000],
+        backgroundColor: theme.palette.background.textfield,
         "& fieldset": {
-            borderColor: "#E4E4E8"
+            borderColor: theme.palette.primaryScale[1000]
         },
         "&:hover fieldset": {
-            borderColor: theme.palette.primaryScale[700]
+            borderColor: theme.palette.primaryScale[1000]
         },
         "&.Mui-focused fieldset": {
-            borderColor: theme.palette.primaryScale[700]
+            borderColor: theme.palette.primaryScale[1000]
         }
     }
 }));
@@ -58,7 +59,7 @@ const SubmitButton = styled(Button)(({ theme }) => ({
     background: theme.palette.primaryScale[400],
     borderRadius: "10px",
     fontSize: "16px",
-    color: "#FFFFFF",
+    color: theme.palette.primaryScale[400],
     textTransform: "none",
     "&:hover": {
         background: theme.palette.primaryScale[400],
@@ -80,7 +81,6 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [authErr, setAuthErr] = React.useState(false);
 
-    const { setUser } = useAuth();
     const navigate = useNavigate();
 
     const handleLogin = async () => {
@@ -90,9 +90,7 @@ const LoginPage = () => {
                 password
             });
 
-            const data = res.data;
-
-            setUser(data.user);  // обновляем контекст
+            console.log("LOGIN RESPONSE", res.data);
             navigate("/course/1/lesson/4/section/1");
         } catch (err) {
             console.error("Ошибка при входе:", err);
@@ -175,7 +173,9 @@ const LoginPage = () => {
                         }}
                     />
                 </div>
-                <SubmitButton disabled={!email || !password} onClick={handleLogin} sx={{ marginBottom: "10px" }}>Войти</SubmitButton>
+                <SubmitButton disabled={!email || !password} onClick={handleLogin} sx={{ marginBottom: "10px" }}>
+                    <Typography variant="text1" sx={{ textAlign: "center", color: "white"}}> Войти </Typography>
+                </SubmitButton>
                 <Typography variant="text1" sx={{ textAlign: "center", color: theme.palette.primaryScale[100], }}>
                     У вас еще нет аккаунта?{" "}
                     <Link component={RouterLink}

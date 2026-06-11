@@ -11,14 +11,14 @@ import mp4 from "../assets/HomePage/mp4.svg";
 const HomePage = () => {
     const theme = useTheme();
     return (
-        <Grid container justifyContent="center" sx={{ height: "100%", overflow: "hidden"}}>
+        <Grid container justifyContent="center" sx={{ height: "100%", overflow: "hidden", background: theme.palette.primaryScale[1000],}}>
             <Banner />
             <Grid size={{ xs: 8 }}
                 sx={{
                     mt: "60px",
                     alignItems: "center",
                     flexDirection: "column",
-                    display: "flex"
+                    display: "flex",
                 }}
             >
                 <Typography

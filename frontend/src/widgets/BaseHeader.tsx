@@ -5,9 +5,8 @@ import { useTheme } from "@mui/material/styles";
 import logo from '../assets/logo.png'
 import api from "../api/api";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../app/providers/AuthProvider";
 import start_picture from "../assets/star.svg";
-import type { Stars } from "../entities/types"
+import type { Stars, User } from "../entities/types"
 
 const StyledHeader = styled("header")(({ theme }) => ({
   backgroundColor: theme.palette.primaryScale[400],
@@ -25,7 +24,7 @@ const StyledLink = styled(Link, {
   shouldForwardProp: (prop) => prop !== "isActive",
 })<{ isActive?: boolean }>(({ theme, isActive }) => ({
   position: "relative",
-  color: theme.palette.background.default,
+  color: "#F2F5FD",
   fontSize: "18px",
   display: "flex",
   marginRight: "25px",
@@ -34,7 +33,7 @@ const StyledLink = styled(Link, {
 
   "&:hover": {
     textDecoration: "none",
-    color: theme.palette.background.default,
+    color: "#F2F5FD",
   },
 }));
 
@@ -42,7 +41,6 @@ const Header = () => {
   const theme = useTheme();
   const location = useLocation();
   const currentPath = location.pathname.split("/")[1] || "";
-  const { user } = useAuth();
   const fetchProgress = async (): Promise<Stars> => {
     try {
       const res = await api.get<Stars>(`api/v1/users/${user?.user_id}/stars`);
@@ -52,6 +50,24 @@ const Header = () => {
       throw new Error("Ошибка загрузки количества звезд");
     }
   };
+  const fetchUser = async (): Promise<User> => {
+    try {
+      const res = await api.get<User>(`api/v1/auth/me`);
+      return res.data;
+    } catch (error) {
+      console.error("Ошибка загрузки активного пользователя", error);
+      throw new Error("Ошибка загрузки активного пользователя");
+    }
+  };
+
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useQuery({
+    queryKey: ["activeUser"],
+    queryFn: fetchUser,
+  });
 
   const { data: stars } = useQuery({
     queryKey: ["stars", user?.user_id],
