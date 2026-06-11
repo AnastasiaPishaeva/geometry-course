@@ -217,12 +217,13 @@ def login(
             }
         )
 
-    response.set_cookie(
+        response.set_cookie(
         key="session_token",
         value=session_token,
         httponly=True,
         secure=True,
-        samesite="lax"
+        samesite="none",
+        max_age=60 * 60 * 24 * 30
     )
 
     return {
